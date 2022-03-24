@@ -41,44 +41,56 @@ def transform(n,image2,image1,output_image,img1_p1,img1_p2,img1_p3,img1_p4,img2_
         transformed_image = Image.fromarray(warp(image2, inverse_tm))
         transformed_image.save(output_image)
     if n == 2:
-        j = [img2_p1, img2_p2]
+        # j = [img2_p1, img2_p2]
         # k = np.array(img1_p1)
-        k = [img1_p1,img1_p2]
-        # print(j)
-        # print(k)
-        res1 = np.linalg.solve(j, k)
+        # # print(j)
+        # # print(k)
+        # res1 = np.linalg.solve(j, k)
+        #
+        # j = [img2_p1, img2_p2]
+        # k = np.array(img1_p2)
+        # res2 = np.linalg.solve(j, k)
+        matrix = np.array([
+            [img2_p1[0], -img2_p1[1], 1, 0],
+            [img2_p1[1], img2_p1[0], 0, 1],
+            [img2_p2[0], -img2_p2[1], 1, 0],
+            [img2_p2[1], img2_p2[0], 0, 1]
+        ])
 
-        print(res1)
-        j = [img2_p1, img2_p2]
-        k = np.array(img1_p2)
-        res2 = np.linalg.solve(j, k)
-
-        # matrix = np.array([[res1[0], res1[1], 0], [res2[0], res2[1], 0], [0, 0, 1]])
-        matrix = np.array([[res1[0][0],res1[0][1],0],[res1[1][0],res1[1][1],0],[0, 0, 1]])
+        mat_b = np.array(
+            [[img1_p1[0]], [img1_p1[1]], [img1_p2[0]], [img1_p2[1]]])
+        x = np.linalg.solve(matrix, mat_b)
+        print("x",x)
+        # x = np.append(x, [0, 0, 1])
+        matrix = np.array([
+            [x[0],-x[1],x[2]],
+            [x[1],x[0],x[3]],
+            [0,0,1]
+        ],dtype=float)
         print("Transformation matrix\n",matrix)
 
         inverse_tm = inv(matrix)
         transformed_image = Image.fromarray(warp(image2, inverse_tm))
         transformed_image.save(output_image)
-    if n == 3:
-        j = [img2_p1[0], img2_p1[1], 1]
-        k = [img2_p2[0], img2_p2[1], 1]
-        l = [img2_p3[0], img2_p3[1], 1]
-        c = np.array([img1_p1[0], img1_p1[1], 1])
-        # print(j)
-        clubed = np.array((j, k, l))
-        res1 = np.linalg.solve(clubed, c)
 
-        j = [img2_p1[0], img2_p1[1], 1]
-        k = [img2_p2[0], img2_p2[1], 1]
-        l = [img2_p3[0], img2_p3[1], 1]
-        c = np.array([img1_p2[0], img1_p2[1], 1])
-        # print(j)
-        clubed = np.array((j, k, l))
-        res2 = np.linalg.solve(clubed, c)
-        # print(res1)
-        # print(res2)
-        matrix = np.array([res1, res2, [0, 0, 1]])
+    if n == 3:
+
+        matrix = np.array([
+            [img2_p1[0], img2_p1[1], 1, 0, 0, 0],
+            [0, 0, 0, img2_p1[0], img2_p1[1], 1],
+            [img2_p2[0], img2_p2[1], 1, 0, 0, 0],
+            [0, 0, 0, img2_p2[0], img2_p2[1], 1],
+            [img2_p3[0], img2_p3[1], 1, 0, 0, 0],
+            [0, 0, 0, img2_p3[0], img2_p3[1], 1]])
+
+        mat_b = np.array(
+            [[img1_p1[0]], [img1_p1[1]], [img1_p2[0]], [img1_p2[1]], [img1_p3[0]], [img1_p3[1]]])
+        x = np.linalg.solve(matrix, mat_b)
+        x = np.append(x, [0,0,1])
+        # print(x)
+        # print(x.reshape((3, 3)))
+        matrix = x.reshape((3, 3))
+        # matrix = np.array([res1, res2, [0, 0, 1]])
         print("Transformation matrix\n",matrix)
 
         inverse_tm = inv(matrix)
