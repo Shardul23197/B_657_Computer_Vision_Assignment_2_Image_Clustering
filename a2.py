@@ -63,6 +63,28 @@ def orb_descriptor(image1,image2):
 
     return dictionary_match_3
 
+def orb_descriptor_1(image1,image2):
+    orb_1 = cv2.ORB_create()
+    kp1, des1 = orb_1.detectAndCompute(image1,None)
+    kp2, des2 = orb_1.detectAndCompute(image2,None)
+    bf = cv2.BFMatcher()
+    matches = bf.knnMatch(des1,des2,k=2)
+    good = []
+    for m,n in matches:
+        if m.distance/n.distance<0.80:
+            good.append(m)
+    final_points={}
+    final_descriptors={}
+    for match in good:
+        query_index=match.queryIdx
+        train_index=match.trainIdx
+        final_points[kp1[query_index]]=kp2[train_index]
+        final_descriptors[des1[query_index]]=des2[train_index]
+    
+    return final_points,final_descriptors
+
+    #print(good)
+
 def warp(image_array, inverse_tm):
     dest_image = np.zeros(image_array.shape)
     for col in range(len(image_array[0])):
