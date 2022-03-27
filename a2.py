@@ -2,6 +2,66 @@ import numpy as np
 from PIL import Image, ImageOps
 from numpy.linalg import inv
 import sys
+import cv2
+
+def orb_descriptor(image1,image2):
+    orb = cv2.ORB_create()
+    (keypoints, descriptors) = orb.detectAndCompute(image1, None)
+    (keypoints1, descriptors1) = orb.detectAndCompute(image2, None)
+    dictionary_match={}
+    dictionary_match_1={}
+    dictionary_match_2={}
+    dictionary_match_3={}
+    for i in range(0, len(keypoints)):
+        dictionary_match[i]=[]
+
+    for i in range(0, len(keypoints)):
+        dictionary_match_1[i]={}
+
+    for i in range(0, len(keypoints)):
+        dictionary_match_2[i]={}
+
+
+    for i in range(0, len(keypoints)):
+        for j in range(0,len(keypoints1)):
+            ed_here=cv2.norm( descriptors[i], descriptors1[j], cv2.NORM_L2)
+            dictionary_match_1[i][j]=ed_here
+      
+
+
+
+    for i in range(0, len(keypoints)):
+        ed_values=dictionary_match_1[i].values()
+        ed_values=list(ed_values)
+        min_1=min(ed_values)
+        index_of_min_1=ed_values.index(min_1)
+        dictionary_match[i].append(min_1)
+        dictionary_match_2[i][index_of_min_1]=min_1
+        ed_values.remove(min_1)
+        min_2=min(ed_values)
+        index_of_min_2=ed_values.index(min_2)
+        dictionary_match[i].append(min_2)
+        dictionary_match_2[i][index_of_min_2]=min_2
+
+    final_matches=[]
+    final_matches_count=0
+    threshold=0.80
+    indexes_list=[]
+    #print(dictionary_match)
+    for i in range(0, len(keypoints)):
+        ratio=dictionary_match[i][0]/dictionary_match[i][1]
+        if ratio<threshold:
+            indexes_list.append(i)
+            final_matches_count+=1
+            dictionary_match_3[i]=min(dictionary_match_2[i], key=dictionary_match_2[i].get)
+      #dictionary_match_3[i]=dictionary_match_2[i]
+      #dictionary_match_2[i]=dictionary_match[i][0]
+
+#print(len(indexes_list))
+    print(dictionary_match_3)
+
+
+    return dictionary_match_3
 
 def warp(image_array, inverse_tm):
     dest_image = np.zeros(image_array.shape)
