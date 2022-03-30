@@ -1,14 +1,14 @@
+
 import numpy as np
 from PIL import Image, ImageOps
 from numpy.linalg import inv
 import sys
+import matplotlib.pyplot as plt
+from copy import deepcopy as deepcopy
 import cv2
-import os
-import sys
 from sklearn.cluster import AgglomerativeClustering
-from PIL import Image, ImageOps
 from scipy.cluster.hierarchy import dendrogram
-
+import os
 
 def part1_function():
     images ={}
@@ -60,7 +60,7 @@ def part1_function():
 
 
     clustering = AgglomerativeClustering(n_clusters=k).fit(number_of_matches_matrix).labels_
-    z= zip(arr,clustering)        
+    z= zip(arr,clustering)
     new_list=list(z)
 
     res = sorted(new_list, key = lambda x: x[1])
@@ -121,105 +121,33 @@ def part1_function():
 
 
 
+def orb_descriptor(image1,image2):
+    #https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html
+    orb_1 = cv2.ORB_create()
+    kp1, des1 = orb_1.detectAndCompute(image1,None)
+    kp2, des2 = orb_1.detectAndCompute(image2,None)
+    bf = cv2.BFMatcher(cv2.NORM_HAMMING)
+    matches = bf.knnMatch(des1,des2,k=2)
+    print("---------------------------------------------",len(matches))
+    good = []
+    for first_closest,second_closest in matches:
+        #print(first_closest.distance,first_closest)
+        #print(second_closest.distance,second_closest)
+        if first_closest.distance/second_closest.distance < 0.9 :
+            good.append(first_closest)
+    img3 = cv2.drawMatches(image1,kp1,image2,kp2,good,None)
+    cv2.imwrite('image.jpg',img3)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# def orb_descriptor(image1,image2):
-#     orb = cv2.ORB_create()
-#     (keypoints, descriptors) = orb.detectAndCompute(image1, None)
-#     (keypoints1, descriptors1) = orb.detectAndCompute(image2, None)
-#     dictionary_match={}
-#     dictionary_match_1={}
-#     dictionary_match_2={}
-#     dictionary_match_3={}
-#     for i in range(0, len(keypoints)):
-#         dictionary_match[i]=[]
-
-#     for i in range(0, len(keypoints)):
-#         dictionary_match_1[i]={}
-
-#     for i in range(0, len(keypoints)):
-#         dictionary_match_2[i]={}
-
-
-#     for i in range(0, len(keypoints)):
-#         for j in range(0,len(keypoints1)):
-#             ed_here=cv2.norm( descriptors[i], descriptors1[j], cv2.NORM_L2)
-#             dictionary_match_1[i][j]=ed_here
-      
-
-
-
-#     for i in range(0, len(keypoints)):
-#         ed_values=dictionary_match_1[i].values()
-#         ed_values=list(ed_values)
-#         min_1=min(ed_values)
-#         index_of_min_1=ed_values.index(min_1)
-#         dictionary_match[i].append(min_1)
-#         dictionary_match_2[i][index_of_min_1]=min_1
-#         ed_values.remove(min_1)
-#         min_2=min(ed_values)
-#         index_of_min_2=ed_values.index(min_2)
-#         dictionary_match[i].append(min_2)
-#         dictionary_match_2[i][index_of_min_2]=min_2
-
-#     final_matches=[]
-#     final_matches_count=0
-#     threshold=0.80
-#     indexes_list=[]
-#     #print(dictionary_match)
-#     for i in range(0, len(keypoints)):
-#         ratio=dictionary_match[i][0]/dictionary_match[i][1]
-#         if ratio<threshold:
-#             indexes_list.append(i)
-#             final_matches_count+=1
-#             dictionary_match_3[i]=min(dictionary_match_2[i], key=dictionary_match_2[i].get)
-#       #dictionary_match_3[i]=dictionary_match_2[i]
-#       #dictionary_match_2[i]=dictionary_match[i][0]
-
-# #print(len(indexes_list))
-#     print(dictionary_match_3)
-
-
-#     return dictionary_match_3
-
-# def orb_descriptor_1(image1,image2):
-#     orb_1 = cv2.ORB_create()
-#     kp1, des1 = orb_1.detectAndCompute(image1,None)
-#     kp2, des2 = orb_1.detectAndCompute(image2,None)
-#     bf = cv2.BFMatcher()
-#     matches = bf.knnMatch(des1,des2,k=2)
-#     good = []
-#     for m,n in matches:
-#         if m.distance/n.distance<0.80:
-#             good.append(m)
-#     final_points={}
-#     final_descriptors={}
-#     for match in good:
-#         query_index=match.queryIdx
-#         train_index=match.trainIdx
-#         final_points[kp1[query_index]]=kp2[train_index]
-#         final_descriptors[des1[query_index]]=des2[train_index]
-    
-#     return final_points,final_descriptors
-
-    #print(good)
+    image1_points = []
+    image2_points = []
+    for match in good:
+        query_index=match.queryIdx
+        train_index=match.trainIdx
+        #image_index = match.imgIdx
+        #final_points[kp1[query_index].pt]=kp2[train_index].pt
+        image1_points.append(kp1[query_index].pt)
+        image2_points.append(kp2[train_index].pt)
+    return image1_points, image2_points
 
 def warp(image_array, inverse_tm):
     dest_image = np.zeros(image_array.shape)
@@ -250,14 +178,12 @@ def warp(image_array, inverse_tm):
     dest_image = dest_image.astype(np.uint8)
     return dest_image
 
-def transform(n,image2,image1,output_image,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4):
+def transform(n,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4):
     # n = 1
     if n==1:
         matrix = np.array([[1, 0, abs(img1_p1[0] - img2_p1[0])], [0, 1, abs(img1_p1[1] - img2_p1[1])], [0, 0, 1]])
         print("Transformation matrix\n",matrix)
-        inverse_tm = inv(matrix)
-        transformed_image = Image.fromarray(warp(image2, inverse_tm))
-        transformed_image.save(output_image)
+        return matrix
     if n == 2:
         # j = [img2_p1, img2_p2]
         # k = np.array(img1_p1)
@@ -287,9 +213,7 @@ def transform(n,image2,image1,output_image,img1_p1,img1_p2,img1_p3,img1_p4,img2_
         ],dtype=float)
         print("Transformation matrix\n",matrix)
 
-        inverse_tm = inv(matrix)
-        transformed_image = Image.fromarray(warp(image2, inverse_tm))
-        transformed_image.save(output_image)
+        return matrix
 
     if n == 3:
 
@@ -311,9 +235,8 @@ def transform(n,image2,image1,output_image,img1_p1,img1_p2,img1_p3,img1_p4,img2_
         # matrix = np.array([res1, res2, [0, 0, 1]])
         print("Transformation matrix\n",matrix)
 
-        inverse_tm = inv(matrix)
-        transformed_image = Image.fromarray(warp(image2, inverse_tm))
-        transformed_image.save(output_image)
+        return matrix
+
     if n == 4:
         matrix = np.array([
             [img2_p1[0], img2_p1[1], 1, 0, 0, 0, -img1_p1[0] * img2_p1[0], -img1_p1[0] * img2_p1[1]],
@@ -335,9 +258,9 @@ def transform(n,image2,image1,output_image,img1_p1,img1_p2,img1_p3,img1_p4,img2_
         matrix = x.reshape((3, 3))
         print("Transformation matrix\n",matrix)
 
-        inverse_tm = inv(matrix)
-        transformed_image = Image.fromarray(warp(image2, inverse_tm))
-        transformed_image.save(output_image)
+        return matrix
+
+
 
 if __name__=="__main__":
     part_number = sys.argv[1]
@@ -345,7 +268,9 @@ if __name__=="__main__":
         print("Hello")
         part1_function()
 
+
     if part_number == "part2":
+        #part2 4 part2-images\book2.jpg part2-images\book1.jpg try.jpg 141,131 318,256 480,159 534,372 493,630 316,670 64,601 73,473
         n = int(sys.argv[2])
         image_name2 = sys.argv[3]
         image_name1 = sys.argv[4]
@@ -369,12 +294,74 @@ if __name__=="__main__":
         img2_p4 = np.array([ int(i) for i in sys.argv[12].split(",")])
         img1_p4 = np.array([ int(i) for i in sys.argv[13].split(",")])
 
-        transform(n,image2,image1,output_image,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4)
+        matrix = transform(n,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4)
+
+        inverse_tm = inv(matrix)
+        transformed_image = Image.fromarray(warp(image2, inverse_tm))
+        transformed_image.save(output_image)
+
+
+    if part_number == "part3":
+
+        # part3 scene1.jpg scene2.jpg
+        image_name1 = sys.argv[2]
+        image_name2 = sys.argv[3]
+
+        image1 = Image.open(image_name1)
+        image1 = np.asarray(image1)
+
+        image2 = Image.open(image_name2)
+        image2 = np.asarray(image2)
+        # call the orb descriptor function to get the orb descriptors and point correspodences.
+
+        points_image1, points_image2 = orb_descriptor(image1,image2)
+        #print("final_points",points_image1,points_image2)
+        print("length of final_points",len(points_image2))
+        s = 4 # number of samples or point correspondences for homography.
+        max_inliers = 0
+        best_points = []
+        best_transformation = None
+        for i in range(2000):
+            inliers = 0
+            sample_indices = list(np.random.randint(0,len(points_image1),s))
+            #print(sample_indices)
+            #print(points_image1[sample_indices[0]])
+            img1_p1,img1_p2,img1_p3,img1_p4 = [points_image1[i] for i in sample_indices]
+            img2_p1,img2_p2,img2_p3 ,img2_p4 = [points_image2[i] for i in sample_indices]
+
+            try:
+            #find the projective trasformation
+                matrix = transform(4,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4)
+            #print(matrix)
+            except:
+                print("singular matrix. \n------ skipping-------\n")
+                continue
+
+            #finding the number of inliers for the above projective transformation
+            for i in range(len(points_image1)):
+                pt1  = np.array([points_image2[i][1],points_image2[i][0],1])
+                pt_ = np.dot(matrix,pt1)
+                pt_ = pt_/pt_[2]
+
+                pt2 = np.array([points_image1[i][1],points_image1[i][0],1])
+                #print("pt_",pt_)
+                #print("pt2",pt2)
+                #find euclidean distance between the transformed point and the actual point from the descriptor
+                if np.sqrt(np.sum((pt_-pt2)**2)) < 15:
+                    inliers += 1
+            print(inliers)
+            if inliers > max_inliers:
+                print("------here------!!!!!!!!!!!!!!!")
+                best_transformation = deepcopy(matrix)
+                max_inliers = inliers
 
 
 
-
-
+        print(max_inliers)
+        print(best_transformation)
+        inverse_tm = inv(best_transformation)
+        transformed_image = Image.fromarray(warp(image1, inverse_tm))
+        transformed_image.save("lets-see.jpg")
 
 
 
