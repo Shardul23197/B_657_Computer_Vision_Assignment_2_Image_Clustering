@@ -5,18 +5,18 @@
 # D. Crandall, Feb 2022
 
 #https://stackoverflow.com/questions/39527947/how-to-calculate-score-from-orb-algorithm
-import cv2
-import numpy as np
-import math
-import matplotlib.pyplot as plt
-import glob
-import os
+# import cv2
+# import numpy as np
+# import math
+# import matplotlib.pyplot as plt
+# import glob
+# import os
 
 
-images ={} 
+# images ={} 
 
-for file in glob.glob("D:/luddy_SICE/spring 22/Computer Vision/Assignments/sdabhane-sparanjp-athakulk-a2/part1-images/*.jpg"):
-   images[str(os.path.basename(file))]=cv2.imread(file)
+# for file in glob.glob("D:/luddy_SICE/spring 22/Computer Vision/Assignments/sdabhane-sparanjp-athakulk-a2/part1-images/*.jpg"):
+#    images[(os.path.basename(file))]=cv2.imread(file)
 
 # matches = []
 # for i in images:
@@ -46,37 +46,37 @@ for file in glob.glob("D:/luddy_SICE/spring 22/Computer Vision/Assignments/sdabh
 #(keypoints1, descriptors1) = orb.detectAndCompute(img1, None)
 # print(len(keypoints1))
 # print(len(descriptors1))
-matches=[]
-for i in images:
-   for j in images:
-      if i==j:
-         pass
-      else: 
-         orb_1 = cv2.ORB_create()
-         kp1, des1 = orb_1.detectAndCompute(images[i],None)
-         kp2, des2 = orb_1.detectAndCompute(images[j],None)
-         bf = cv2.BFMatcher()
-         matches = bf.knnMatch(des1,des2,k=2)
-         good = []
-         for m,n in matches:
-            if m.distance/n.distance<0.75:
-               good.append(m)
-         final_points={}
-         final_descriptors={}
-         for match in good:
-            query_index=match.queryIdx
-            train_index=match.trainIdx
-            final_points[kp1[query_index]]=kp2[train_index]
-            #final_descriptors[des1[query_index]]=des2[train_index]
+# matches=[]
+# for i in images:
+#    for j in images:
+#       if i==j:
+#          pass
+#       else: 
+#          orb_1 = cv2.ORB_create()
+#          kp1, des1 = orb_1.detectAndCompute(images[i],None)
+#          kp2, des2 = orb_1.detectAndCompute(images[j],None)
+#          bf = cv2.BFMatcher()
+#          matches = bf.knnMatch(des1,des2,k=2)
+#          good = []
+#          for m,n in matches:
+#             if m.distance/n.distance<0.75:
+#                good.append(m)
+#          final_points={}
+#          final_descriptors={}
+#          for match in good:
+#             query_index=match.queryIdx
+#             train_index=match.trainIdx
+#             final_points[kp1[query_index]]=kp2[train_index]
+#             #final_descriptors[des1[query_index]]=des2[train_index]
 
-         print('final_points:',final_points)
-         print(len(final_points))
+#          print('final_points:',final_points)
+#          print(len(final_points))
 
 
-         matches[i][j]=matches[j][i]
+#          matches[i][j]=matches[j][i]
          
-print('hello')
-print(len(matches))
+# print('hello')
+# print(len(matches))
 
    #print('final_descriptors:',final_descriptors)
 
@@ -239,3 +239,13 @@ print(len(matches))
 # #       img[int(keypoints[i].pt[1])-j, int(keypoints[i].pt[0])+j] = 255 
 
 # # cv2.imwrite("lincoln-orb.jpg", img)
+
+images={'a':[1,2,3],'b':[2,4,5],'c':3}
+for i in range(len(images)):
+   for j in range(i+1, len(images)):
+      kp1=list(images.values())[i]
+      print(kp1)
+      kp2=list(images.values())[j]
+      print(kp2)
+      break
+   break

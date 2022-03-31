@@ -8,77 +8,78 @@ import cv2
 from sklearn.cluster import AgglomerativeClustering
 from scipy.cluster.hierarchy import dendrogram
 import os
+import glob
 
-def part1_function():
-    images ={}
-    k = int(sys.argv[2])
-    arr = os.listdir(sys.argv[3])
-    for i in range(len(arr)):
-        image1 = Image.open(sys.argv[3]+"/"+arr[i])
-        image1 = np.asarray(image1)
-        images[i] = image1
+def part1_function(images,arr,k):
+
     points_dictionary={}
-    for i in range(len(arr)):
-        for j in range(i+1, len(arr)):
-            image1 = sys.argv[3]+"/"+arr[i]
-            image2 = sys.argv[3]+"/"+arr[j]
+    for i in range(len(images)):
+        for j in range(i+1, len(images)):
+            image1 = list(images.keys())[i]
+            image2 = list(images.keys())[j]
             points_dictionary[(image1,image2)]=None
 
     number_of_matches_matrix = np.zeros(shape=(len(images), len(images)))
     for i in range(len(images)):
         for j in range(i+1, len(images)):
-            image1 = sys.argv[3]+"/"+arr[i]
-            image2 = sys.argv[3]+"/"+arr[j]
             orb_1 = cv2.ORB_create()
-            kp1, des1 = orb_1.detectAndCompute(images[i],None)
+            kp1, des1 = orb_1.detectAndCompute(list(images.values())[i],None)
             orb_2 = cv2.ORB_create()
-            kp2, des2 = orb_2.detectAndCompute(images[j],None)
+            kp2, des2 = orb_2.detectAndCompute(list(images.values())[j],None)
             bf = cv2.BFMatcher(cv2.NORM_HAMMING,crossCheck=False)
             matches = bf.knnMatch(des1,des2,k=2)
             good = []
             for first_closest,second_closest in matches:
-                if first_closest.distance/second_closest.distance < 0.75 :
+                if first_closest.distance/second_closest.distance < 0.9 :
                     good.append(first_closest)
             number_of_matches_matrix[i][j] = len(good)
             points_dictionary[(image1,image2)]=good
 
-            image1 = sys.argv[3]+"/"+arr[j]
-            image2 = sys.argv[3]+"/"+arr[i]
             orb_3 = cv2.ORB_create()
-            kp3, des3 = orb_3.detectAndCompute(images[j],None)
+            kp3, des3 = orb_3.detectAndCompute(list(images.values())[j],None)
             orb_4 = cv2.ORB_create()
-            kp4, des4 = orb_3.detectAndCompute(images[i],None)
+            kp4, des4 = orb_4.detectAndCompute(list(images.values())[i],None)
             bf1 = cv2.BFMatcher(cv2.NORM_HAMMING,crossCheck=False)
             matches1 = bf1.knnMatch(des3,des4,k=2)
             good1 = []
             for first_closest,second_closest in matches1:
-                if first_closest.distance/second_closest.distance < 0.75 :
+                if first_closest.distance/second_closest.distance < 0.9 :
                     good1.append(first_closest)
             number_of_matches_matrix[j][i] = len(good1)
             points_dictionary[(image1,image2)]=good1
 
 
-    clustering = AgglomerativeClustering(n_clusters=k).fit(number_of_matches_matrix).labels_
-    z= zip(arr,clustering)
-    new_list=list(z)
+    #print(points_dictionary)
+    print(number_of_matches_matrix)
 
+
+    clustering = AgglomerativeClustering(n_clusters=k,affinity='cosine',linkage='complete').fit(number_of_matches_matrix).labels_
+
+    z= zip(arr,clustering)        
+    new_list=list(z)
     res = sorted(new_list, key = lambda x: x[1])
+
 
     dictionary_list_1={}
     dictionary_list_2={}
     for i in range(k):
         dictionary_list_1[i]=[]
+
     for i in range(0,len(res)):
         dictionary_list_1[res[i][1]].append(res[i][0])
+
     for i in range(0,len(res)):
         dictionary_list_2[res[i][0]]=res[i][1]
+
 
     total_pairs=len(clustering)*(len(clustering)-1)
     true_positives=0
     true_negatives=0
 
+    count=0
     for i in range(0,len(res)):
         for j in range(i+1, len(res)):
+            count+=2
             i1=res[i][0]
             i2=res[j][0]
             i_1 = i1.replace("_", "")
@@ -89,6 +90,7 @@ def part1_function():
                 true_positives+=1
             elif im1!=im2 and dictionary_list_2[i1]!=dictionary_list_2[i2]:
                 true_negatives+=1
+
             i3=res[j][0]
             i4=res[i][0]
             i_3 = i3.replace("_", "")
@@ -101,18 +103,19 @@ def part1_function():
                 true_negatives+=1
 
 
+    print(count)
+
     print(true_positives)
     print(true_negatives)
-
     accuracy=(true_positives+true_negatives)/total_pairs
     print(accuracy)
-    filename=sys.argv[4]
 
+    filename=sys.argv[4]
     list_of_cluster_indexes=list(dictionary_list_1.keys())
+    #print(list_of_cluster_indexes)
 
     for i in range(0,len(list_of_cluster_indexes)):
         line_here=dictionary_list_1[list_of_cluster_indexes[i]]
-        print(line_here)
         with open(filename, 'a') as f:
             for j in range(len(line_here)):
                 f.write(line_here[j]+" ")
@@ -264,12 +267,20 @@ def transform(n,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4
 if __name__=="__main__":
     part_number = sys.argv[1]
     if part_number == "part1":
-        print("Hello")
-        part1_function()
+        print("Starting Part 1:")
+        images ={}
+        arr=[]
+        for file in glob.glob(sys.argv[3]):
+            images[os.path.basename(file)]=cv2.imread(file)
+            arr.append(os.path.basename(file))
+
+        k = int(sys.argv[2])
+        part1_function(images,arr,k)
 
 
     if part_number == "part2":
         #part2 4 part2-images\book2.jpg part2-images\book1.jpg try.jpg 141,131 318,256 480,159 534,372 493,630 316,670 64,601 73,473
+        print("Starting Part 2:")
         n = int(sys.argv[2])
         image_name2 = sys.argv[3]
         image_name1 = sys.argv[4]
@@ -301,6 +312,7 @@ if __name__=="__main__":
 
 
     if part_number == "part3":
+        print("Starting Part 3:")
 
         # part3 scene1.jpg scene2.jpg
         image_name1 = sys.argv[2]
