@@ -19,15 +19,14 @@ from PIL import Image, ImageOps
 images ={}
 arr=[]
 for file in glob.glob(sys.argv[3]):
-   images[os.path.basename(file)]=cv2.imread(file)
-   arr.append(os.path.basename(file))
-#print(arr)
+    images[os.path.basename(file)]=cv2.imread(file)
+    arr.append(os.path.basename(file))
 k = int(sys.argv[2])
-#print(images)
 
 points_dictionary={}
-for i in range(len(images)):
-    for j in range(i+1, len(images)):
+
+for i in range(len(arr)):
+    for j in range(i+1, len(arr)):
         image1 = list(images.keys())[i]
         image2 = list(images.keys())[j]
         points_dictionary[(image1,image2)]=None
@@ -37,10 +36,9 @@ for i in range(len(images)):
 
 
 number_of_matches_matrix = np.zeros(shape=(len(arr), len(arr)))
-for i in range(len(arr)):
-    for j in range(i+1, len(arr)):
-        #print(images[i])
-        #print(images[j])
+for i in range(len(images)):
+    for j in range(i+1, len(images)):
+        
         orb_1 = cv2.ORB_create()
         kp1, des1 = orb_1.detectAndCompute(list(images.values())[i],None)
         orb_2 = cv2.ORB_create()
@@ -57,7 +55,7 @@ for i in range(len(arr)):
         orb_3 = cv2.ORB_create()
         kp3, des3 = orb_3.detectAndCompute(list(images.values())[j],None)
         orb_4 = cv2.ORB_create()
-        kp4, des4 = orb_4.detectAndCompute(list(images.values())[i],None)
+        kp4, des4 = orb_3.detectAndCompute(list(images.values())[i],None)
         bf1 = cv2.BFMatcher(cv2.NORM_HAMMING,crossCheck=False)
         matches1 = bf1.knnMatch(des3,des4,k=2)
         good1 = []

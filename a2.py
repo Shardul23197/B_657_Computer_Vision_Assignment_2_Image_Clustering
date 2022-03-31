@@ -11,10 +11,9 @@ import os
 import glob
 
 def part1_function(images,arr,k):
-
     points_dictionary={}
-    for i in range(len(images)):
-        for j in range(i+1, len(images)):
+    for i in range(len(arr)):
+        for j in range(i+1, len(arr)):
             image1 = list(images.keys())[i]
             image2 = list(images.keys())[j]
             points_dictionary[(image1,image2)]=None
@@ -38,7 +37,7 @@ def part1_function(images,arr,k):
             orb_3 = cv2.ORB_create()
             kp3, des3 = orb_3.detectAndCompute(list(images.values())[j],None)
             orb_4 = cv2.ORB_create()
-            kp4, des4 = orb_4.detectAndCompute(list(images.values())[i],None)
+            kp4, des4 = orb_3.detectAndCompute(list(images.values())[i],None)
             bf1 = cv2.BFMatcher(cv2.NORM_HAMMING,crossCheck=False)
             matches1 = bf1.knnMatch(des3,des4,k=2)
             good1 = []
@@ -49,8 +48,9 @@ def part1_function(images,arr,k):
             points_dictionary[(image1,image2)]=good1
 
 
-    #print(points_dictionary)
-    print(number_of_matches_matrix)
+    clustering = AgglomerativeClustering(n_clusters=k,affinity='cosine',linkage='complete').fit(number_of_matches_matrix).labels_
+    z= zip(arr,clustering)
+    new_list=list(z)
 
 
     clustering = AgglomerativeClustering(n_clusters=k,affinity='cosine',linkage='complete').fit(number_of_matches_matrix).labels_
@@ -267,13 +267,12 @@ def transform(n,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4
 if __name__=="__main__":
     part_number = sys.argv[1]
     if part_number == "part1":
-        print("Starting Part 1:")
+        print("starting Part 1:")
         images ={}
         arr=[]
         for file in glob.glob(sys.argv[3]):
             images[os.path.basename(file)]=cv2.imread(file)
             arr.append(os.path.basename(file))
-
         k = int(sys.argv[2])
         part1_function(images,arr,k)
 
