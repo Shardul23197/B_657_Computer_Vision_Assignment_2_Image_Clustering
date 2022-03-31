@@ -14,7 +14,6 @@ import os
 import sys
 from sklearn.cluster import AgglomerativeClustering
 from PIL import Image, ImageOps
-from scipy.cluster.hierarchy import dendrogram
 
 #print(len(sys.argv))
 images ={}
@@ -53,7 +52,7 @@ for i in range(len(images)):
         matches = bf.knnMatch(des1,des2,k=2)
         good = []
         for first_closest,second_closest in matches:
-            if first_closest.distance/second_closest.distance < 0.75 :
+            if first_closest.distance/second_closest.distance < 0.9 :
                 good.append(first_closest)
         number_of_matches_matrix[i][j] = len(good)
         points_dictionary[(image1,image2)]=good
@@ -68,7 +67,7 @@ for i in range(len(images)):
         matches1 = bf1.knnMatch(des3,des4,k=2)
         good1 = []
         for first_closest,second_closest in matches1:
-            if first_closest.distance/second_closest.distance < 0.75 :
+            if first_closest.distance/second_closest.distance < 0.9 :
                 good1.append(first_closest)
         number_of_matches_matrix[j][i] = len(good1)
         points_dictionary[(image1,image2)]=good1
@@ -78,7 +77,7 @@ for i in range(len(images)):
 
 
 
-clustering = AgglomerativeClustering(n_clusters=k).fit(number_of_matches_matrix).labels_
+clustering = AgglomerativeClustering(n_clusters=k,affinity='cosine',linkage='complete').fit(number_of_matches_matrix).labels_
 
 z= zip(arr,clustering)        
 new_list=list(z)

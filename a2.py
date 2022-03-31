@@ -59,7 +59,7 @@ def part1_function():
             points_dictionary[(image1,image2)]=good1
 
 
-    clustering = AgglomerativeClustering(n_clusters=k).fit(number_of_matches_matrix).labels_
+    clustering = AgglomerativeClustering(n_clusters=k,affinity='cosine',linkage='complete').fit(number_of_matches_matrix).labels_
     z= zip(arr,clustering)
     new_list=list(z)
 
@@ -133,7 +133,7 @@ def orb_descriptor(image1,image2):
     for first_closest,second_closest in matches:
         #print(first_closest.distance,first_closest)
         #print(second_closest.distance,second_closest)
-        if first_closest.distance/second_closest.distance < 0.9 :
+        if first_closest.distance/second_closest.distance < 0.75 :
             good.append(first_closest)
     img3 = cv2.drawMatches(image1,kp1,image2,kp2,good,None)
     cv2.imwrite('image.jpg',img3)
@@ -173,7 +173,7 @@ def warp(image_array, inverse_tm):
                             i] + (a) * (1 - b) * image_array[x_ + 1][y_][i] + (a) * (b) * image_array[x_ + 1][y_ + 1][i]
                         rgb[i] = int(value)
 
-                dest_image[row][col] = rgb
+                dest_image[row][col] = rgb #(3,1)
 
     dest_image = dest_image.astype(np.uint8)
     return dest_image
@@ -321,7 +321,7 @@ if __name__=="__main__":
         max_inliers = 0
         best_points = []
         best_transformation = None
-        for i in range(2000):
+        for i in range(10000):
             inliers = 0
             sample_indices = list(np.random.randint(0,len(points_image1),s))
             #print(sample_indices)
@@ -331,7 +331,7 @@ if __name__=="__main__":
 
             try:
             #find the projective trasformation
-                matrix = transform(4,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4)
+                matrix = transform(3,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4)
             #print(matrix)
             except:
                 print("singular matrix. \n------ skipping-------\n")
