@@ -262,6 +262,9 @@ def transform(n,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4
 
         return matrix
 
+def letsStitch(image1,image2,bestTransMat,invTransMat):
+    pass
+
 
 
 if __name__=="__main__":
@@ -331,7 +334,7 @@ if __name__=="__main__":
         max_inliers = 0
         best_points = []
         best_transformation = None
-        for i in range(2000):
+        for i in range(10000):
             inliers = 0
             sample_indices = list(np.random.randint(0,len(points_image1),s))
             #print(sample_indices)
@@ -341,7 +344,7 @@ if __name__=="__main__":
 
             try:
             #find the projective trasformation
-                matrix = transform(1,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4)
+                matrix = transform(4,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4)
             #print(matrix)
             except:
                 print("singular matrix. \n------ skipping-------\n")
@@ -357,18 +360,20 @@ if __name__=="__main__":
                 #print("pt_",pt_)
                 #print("pt2",pt2)
                 #find euclidean distance between the transformed point and the actual point from the descriptor
-                if np.sqrt(np.sum((pt_-pt2)**2)) < 15:
+                if np.sqrt(np.sum((pt_-pt2)**2)) < 0.5:
                     inliers += 1
             print(inliers)
             if inliers > max_inliers:
                 print("------here------!!!!!!!!!!!!!!!")
                 best_transformation = deepcopy(matrix)
                 max_inliers = inliers
-
-
-
+        
         print(max_inliers)
         print(best_transformation)
-        inverse_tm = inv(best_transformation)
+
+        inverse_tm = inv(matrix)
         transformed_image = Image.fromarray(warp(image1, inverse_tm))
         transformed_image.save("lets-see.jpg")
+
+        #We need the best transformation matrix and the inv transformation matrix.
+        stitched_img=letsStitch(image_name1,image_name2,best_transformation,inverse_tm)
