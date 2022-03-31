@@ -14,41 +14,37 @@ import os
 import sys
 from sklearn.cluster import AgglomerativeClustering
 from PIL import Image, ImageOps
-from scipy.cluster.hierarchy import dendrogram
 
 #print(len(sys.argv))
 images ={}
+arr=[]
+for file in glob.glob(sys.argv[3]):
+   images[os.path.basename(file)]=cv2.imread(file)
+   arr.append(os.path.basename(file))
+#print(arr)
 k = int(sys.argv[2])
-arr = os.listdir(sys.argv[3])
-for i in range(len(arr)):
-    image1 = Image.open(sys.argv[3]+"/"+arr[i])
-    image1 = np.asarray(image1)
-    images[i] = image1
-
+#print(images)
 
 points_dictionary={}
-
-for i in range(len(arr)):
-    for j in range(i+1, len(arr)):
-        image1 = sys.argv[3]+"/"+arr[i]
-        image2 = sys.argv[3]+"/"+arr[j]
+for i in range(len(images)):
+    for j in range(i+1, len(images)):
+        image1 = list(images.keys())[i]
+        image2 = list(images.keys())[j]
         points_dictionary[(image1,image2)]=None
 #print(points_dictionary)
 #print(arr)
 #print(len(arr))
 
 
-number_of_matches_matrix = np.zeros(shape=(len(images), len(images)))
-for i in range(len(images)):
-    for j in range(i+1, len(images)):
-        image1 = sys.argv[3]+"/"+arr[i]
-        image2 = sys.argv[3]+"/"+arr[j]
+number_of_matches_matrix = np.zeros(shape=(len(arr), len(arr)))
+for i in range(len(arr)):
+    for j in range(i+1, len(arr)):
         #print(images[i])
         #print(images[j])
         orb_1 = cv2.ORB_create()
-        kp1, des1 = orb_1.detectAndCompute(images[i],None)
+        kp1, des1 = orb_1.detectAndCompute(list(images.values())[i],None)
         orb_2 = cv2.ORB_create()
-        kp2, des2 = orb_2.detectAndCompute(images[j],None)
+        kp2, des2 = orb_2.detectAndCompute(list(images.values())[j],None)
         bf = cv2.BFMatcher(cv2.NORM_HAMMING,crossCheck=False)
         matches = bf.knnMatch(des1,des2,k=2)
         good = []
@@ -58,12 +54,10 @@ for i in range(len(images)):
         number_of_matches_matrix[i][j] = len(good)
         points_dictionary[(image1,image2)]=good
 
-        image1 = sys.argv[3]+"/"+arr[j]
-        image2 = sys.argv[3]+"/"+arr[i]
         orb_3 = cv2.ORB_create()
-        kp3, des3 = orb_3.detectAndCompute(images[j],None)
+        kp3, des3 = orb_3.detectAndCompute(list(images.values())[j],None)
         orb_4 = cv2.ORB_create()
-        kp4, des4 = orb_3.detectAndCompute(images[i],None)
+        kp4, des4 = orb_4.detectAndCompute(list(images.values())[i],None)
         bf1 = cv2.BFMatcher(cv2.NORM_HAMMING,crossCheck=False)
         matches1 = bf1.knnMatch(des3,des4,k=2)
         good1 = []
@@ -75,17 +69,18 @@ for i in range(len(images)):
 
 
 #print(points_dictionary)
+#print(number_of_matches_matrix)
 
 
-
-clustering = AgglomerativeClustering(n_clusters=k).fit(number_of_matches_matrix).labels_
+clustering = AgglomerativeClustering(n_clusters=k,affinity='cosine',linkage='complete').fit(number_of_matches_matrix).labels_
 
 z= zip(arr,clustering)        
 new_list=list(z)
 
 
-res = sorted(new_list, key = lambda x: x[1])
 
+res = sorted(new_list, key = lambda x: x[1])
+#print(res)
 
 dictionary_list_1={}
 dictionary_list_2={}
@@ -94,6 +89,7 @@ for i in range(k):
 
 for i in range(0,len(res)):
     dictionary_list_1[res[i][1]].append(res[i][0])
+
 
 for i in range(0,len(res)):
     dictionary_list_2[res[i][0]]=res[i][1]
@@ -104,6 +100,7 @@ total_pairs=len(clustering)*(len(clustering)-1)
 true_positives=0
 true_negatives=0
 
+#print(dictionary_list_1)
 #print(dictionary_list_2)
 count=0
 for i in range(0,len(res)):
@@ -113,8 +110,10 @@ for i in range(0,len(res)):
         i2=res[j][0]
         i_1 = i1.replace("_", "")
         i_2 = i2.replace("_", "")
+        #print(i_1,i_2)
         im1 = ''.join([i for i in i_1 if not i.isdigit()])
         im2 = ''.join([i for i in i_2 if not i.isdigit()])
+        #print(im1,im2)
         if im1==im2 and dictionary_list_2[i1]==dictionary_list_2[i2]:
             true_positives+=1
         elif im1!=im2 and dictionary_list_2[i1]!=dictionary_list_2[i2]:
@@ -126,13 +125,16 @@ for i in range(0,len(res)):
         i_4 = i4.replace("_", "")
         im3 = ''.join([i for i in i_3 if not i.isdigit()])
         im4 = ''.join([i for i in i_4 if not i.isdigit()])
+        #print(dictionary_list_2[i3])
+
         if im3==im4 and dictionary_list_2[i3]==dictionary_list_2[i4]:
             true_positives+=1
         elif im3!=im4 and dictionary_list_2[i3]!=dictionary_list_2[i4]:
             true_negatives+=1
 
 
-print(count)
+#print(count)
+print(total_pairs)
 
 print(true_positives)
 print(true_negatives)
