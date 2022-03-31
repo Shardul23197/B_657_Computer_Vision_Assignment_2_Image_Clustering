@@ -331,7 +331,7 @@ if __name__=="__main__":
 
             try:
             #find the projective trasformation
-                matrix = transform(3,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4)
+                matrix = transform(1,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4)
             #print(matrix)
             except:
                 print("singular matrix. \n------ skipping-------\n")
