@@ -8,25 +8,25 @@
 Image warping means that the image is transformed using a 3x3 Transformation matrix.
 We have written a function warp() which takes an image which is to be transformed and the transformation matrix as its arguments.
 We have used bilinear interpolation along with inverse warping as specified in the assignemnt. Using inverse warping aviods holes in the warped image and bilinear transformation helps smoothen the image.
+To write the code for bilinear transformation, I watched the following video https://youtu.be/UhGEtSdBwIQ  and followed its steps.
 To test this function we tested it on the given "lincoln.jpg" image to confirm if warp() worked correctly.
-![Alt text](https://media.github.iu.edu/user/18152/files/b02fb0d6-c001-4948-97ed-53514b6f6a03)
 
+<br> <br>
 ### Finding the transformation matrix from given correspondenses:
-
 
 The results for transformation on the book image from the assignemnt are:<br>
 
-**1) Translation n=1: **<br>
+**1) Translation n=1:** <br>
 ![Alt text](https://media.github.iu.edu/user/18152/files/ad69aaa2-04ff-4ad2-b01c-614485789c21)
 
 
-**2) Euclidean n=2: **<br>
+**2) Euclidean n=2:**<br>
 ![Alt text](https://media.github.iu.edu/user/18152/files/a2dc1e72-ccb2-4f40-b8c0-78a64123c766)
 
-**1) Affine n=3: **<br>
+**1) Affine n=3:**<br>
 ![Alt text](https://media.github.iu.edu/user/18152/files/dd09c93b-79ab-458e-84f5-a94946e1c17d)
 
-**1) Projective n=4: **<br>
+**1) Projective n=4:**<br>
 ![Alt text](https://media.github.iu.edu/user/18152/files/9088ca4c-7bf0-4d6e-82fb-bbc046a0bfcf)
 
 
