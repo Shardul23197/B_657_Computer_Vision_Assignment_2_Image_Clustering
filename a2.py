@@ -10,7 +10,15 @@ from scipy.cluster.hierarchy import dendrogram
 import os
 import glob
 
+#Code for matching part is from: https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html
+#(specifically Brute-Force Matching with SIFT Descriptors and Ratio Test with ORB instead of SIFT)
+
 def part1_function(images,arr,k):
+    #filename1=sys.argv[4]
+    #filename2=sys.argv[5]
+    #print(sys.argv)
+
+    #create dictionary to store the image tuples in
     points_dictionary={}
     for i in range(len(arr)):
         for j in range(i+1, len(arr)):
@@ -18,22 +26,33 @@ def part1_function(images,arr,k):
             image2 = list(images.keys())[j]
             points_dictionary[(image1,image2)]=None
 
+    #matrix of matches to feed the clustering function
     number_of_matches_matrix = np.zeros(shape=(len(images), len(images)))
     for i in range(len(images)):
         for j in range(i+1, len(images)):
+            #create orb object for image 1 and find keypoints and descriptors
             orb_1 = cv2.ORB_create()
             kp1, des1 = orb_1.detectAndCompute(list(images.values())[i],None)
+
+            #create orb object for image 2 and find keypoints and descriptors
             orb_2 = cv2.ORB_create()
             kp2, des2 = orb_2.detectAndCompute(list(images.values())[j],None)
+
+            #use brute force matching and knnMatch to find matching points.
+            #We take k=2 to get the 2 closest matching points
             bf = cv2.BFMatcher(cv2.NORM_HAMMING,crossCheck=False)
             matches = bf.knnMatch(des1,des2,k=2)
             good = []
             for first_closest,second_closest in matches:
-                if first_closest.distance/second_closest.distance < 0.9 :
+                #apply thresholding to get better matches
+                #if the closest distance is much smaller than the second closest distance,
+                #then that's a good match
+                if first_closest.distance/second_closest.distance < 0.70 :
                     good.append(first_closest)
             number_of_matches_matrix[i][j] = len(good)
             points_dictionary[(image1,image2)]=good
 
+            #Switch the order and carry out the same steps as above
             orb_3 = cv2.ORB_create()
             kp3, des3 = orb_3.detectAndCompute(list(images.values())[j],None)
             orb_4 = cv2.ORB_create()
@@ -42,23 +61,30 @@ def part1_function(images,arr,k):
             matches1 = bf1.knnMatch(des3,des4,k=2)
             good1 = []
             for first_closest,second_closest in matches1:
-                if first_closest.distance/second_closest.distance < 0.9 :
+                if first_closest.distance/second_closest.distance < 0.70 :
                     good1.append(first_closest)
             number_of_matches_matrix[j][i] = len(good1)
             points_dictionary[(image1,image2)]=good1
 
+    print(number_of_matches_matrix)
+
+    #https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AgglomerativeClustering.html
+
+    #Perform clustering twice
+    #clustering = AgglomerativeClustering(n_clusters=k,affinity='cosine',linkage='complete').fit(number_of_matches_matrix).labels_
+    #clustering = AgglomerativeClustering(n_clusters=k,affinity='euclidean',linkage='complete').fit(number_of_matches_matrix).labels_
+    #z= zip(arr,clustering)
+    #new_list=list(z)
+
 
     clustering = AgglomerativeClustering(n_clusters=k,affinity='cosine',linkage='complete').fit(number_of_matches_matrix).labels_
-    z= zip(arr,clustering)
-    new_list=list(z)
-
-
-    clustering = AgglomerativeClustering(n_clusters=k,affinity='cosine',linkage='complete').fit(number_of_matches_matrix).labels_
+    #clustering = AgglomerativeClustering(n_clusters=k,affinity='euclidean',linkage='complete').fit(number_of_matches_matrix).labels_
 
     z= zip(arr,clustering)        
     new_list=list(z)
     res = sorted(new_list, key = lambda x: x[1])
-
+    print("Length")
+    print(len(res))
 
     dictionary_list_1={}
     dictionary_list_2={}
@@ -77,6 +103,9 @@ def part1_function(images,arr,k):
     true_negatives=0
 
     count=0
+
+    #find pairs of images that should be in the same cluster and are in the same cluster(True positive)
+    #also find pairs of images that shouldn't be in the same cluster and aren't(True negative)
     for i in range(0,len(res)):
         for j in range(i+1, len(res)):
             count+=2
@@ -86,6 +115,8 @@ def part1_function(images,arr,k):
             i_2 = i2.replace("_", "")
             im1 = ''.join([i for i in i_1 if not i.isdigit()])
             im2 = ''.join([i for i in i_2 if not i.isdigit()])
+
+            #True positive
             if im1==im2 and dictionary_list_2[i1]==dictionary_list_2[i2]:
                 true_positives+=1
             elif im1!=im2 and dictionary_list_2[i1]!=dictionary_list_2[i2]:
@@ -107,10 +138,12 @@ def part1_function(images,arr,k):
 
     print(true_positives)
     print(true_negatives)
+    #Calculate the accuracy
     accuracy=(true_positives+true_negatives)/total_pairs
     print(accuracy)
 
-    filename=sys.argv[4]
+    filename=sys.argv[-1]
+    print(filename)
     list_of_cluster_indexes=list(dictionary_list_1.keys())
     #print(list_of_cluster_indexes)
 
@@ -273,10 +306,24 @@ if __name__=="__main__":
         print("starting Part 1:")
         images ={}
         arr=[]
-        for file in glob.glob(sys.argv[3]):
+        print("path")
+        print(sys.argv[3])
+        #path_len=len(sys.argv[3])
+        #path_here=sys.argv[3][:path_len-5]
+        #print(path_here)
+        #print(glob.glob(sys.argv[3]))
+        path_here=sys.argv[3].split("/",1)[0]
+        #print(sys.argv[3].split("/",1)[1])
+        #print(path_here)
+        path_here=path_here+"/*."+sys.argv[3][-3:]
+        print(path_here)
+        #for file in glob.glob(sys.argv[3]):
+        for file in glob.glob(path_here):
             images[os.path.basename(file)]=cv2.imread(file)
             arr.append(os.path.basename(file))
         k = int(sys.argv[2])
+        #print(images)
+        #print(arr)
         part1_function(images,arr,k)
 
 
