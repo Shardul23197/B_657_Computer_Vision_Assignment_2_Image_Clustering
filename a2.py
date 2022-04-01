@@ -13,7 +13,7 @@ import glob
 #Code for ORB matches matrix from:https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html
 #From Brute-Force Matching with SIFT Descriptors and Ratio Test
 
-def part1_function(images,arr,k):
+def image_matching_and_clustering(images,arr,k):
     
     #create dictionary to store the image tuples in
     points_dictionary={}
@@ -361,7 +361,7 @@ if __name__=="__main__":
             images_index+=1
 
         k = int(sys.argv[2])
-        part1_function(images,arr,k)
+        image_matching_and_clustering(images,arr,k)
 
 
 
