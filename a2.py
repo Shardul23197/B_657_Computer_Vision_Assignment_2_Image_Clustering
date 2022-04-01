@@ -85,6 +85,7 @@ def part1_function(images,arr,k):
 
 
     total_pairs=len(clustering)*(len(clustering)-1)
+    print(total_pairs)
     true_positives=0
     true_negatives=0
 
@@ -123,7 +124,7 @@ def part1_function(images,arr,k):
     #Calculate the accuracy
     accuracy=(true_positives+true_negatives)/total_pairs
     print("The Pairwise Clustering Accuracy is: ")
-    print(accuracy)
+    print(accuracy*100)
 
     filename=sys.argv[-1]
     list_of_cluster_indexes=list(dictionary_list_1.keys())
