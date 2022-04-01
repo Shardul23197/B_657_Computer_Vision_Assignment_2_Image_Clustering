@@ -61,14 +61,14 @@ def part1_function(images,arr,k):
             number_of_matches_matrix[j][i] = len(good1)
             points_dictionary[(image1,image2)]=good1
 
-    print(number_of_matches_matrix)
+    #print(number_of_matches_matrix)
 
     clustering = AgglomerativeClustering(n_clusters=k,affinity='cosine',linkage='complete').fit(number_of_matches_matrix).labels_
 
     z= zip(arr,clustering)        
     new_list=list(z)
     res = sorted(new_list, key = lambda x: x[1])
-    print("Length")
+    print("Number of images:")
     print(len(res))
 
     dictionary_list_1={}
@@ -119,19 +119,21 @@ def part1_function(images,arr,k):
                 true_negatives+=1
 
 
-    print(count)
+    #print(count)
 
-    print(true_positives)
-    print(true_negatives)
+    print("Number of true positives: ", true_positives)
+    print("Number of true negatives: ",true_negatives)
     #Calculate the accuracy
     accuracy=(true_positives+true_negatives)/total_pairs
+    print("The Pairwise Clustering Accuracy is: ")
     print(accuracy)
 
     filename=sys.argv[-1]
-    print(filename)
+    #print(filename)
     list_of_cluster_indexes=list(dictionary_list_1.keys())
     #print(list_of_cluster_indexes)
 
+    #Writing the clustering results in file
     for i in range(0,len(list_of_cluster_indexes)):
         line_here=dictionary_list_1[list_of_cluster_indexes[i]]
         with open(filename, 'a') as f:
@@ -355,11 +357,29 @@ if __name__=="__main__":
         print("starting Part 1:")
         images ={}
         arr=[]
-        for file in glob.glob(sys.argv[3]):
+        print("path")
+        #print(sys.argv[3])
+        #path_len=len(sys.argv[3])
+        #path_here=sys.argv[3][:path_len-5]
+        #print(path_here)
+        #print(glob.glob(sys.argv[3]))
+        path_here=sys.argv[3].split("/",1)[0]
+        #print(sys.argv[3].split("/",1)[1])
+        #print(path_here)
+        #file_extension=
+        file_extension=sys.argv[3].split(".",1)[1]
+        #path_here=path_here+"/*."+sys.argv[3][-3:]
+        path_here=path_here+"/*."+file_extension
+        print(path_here)
+        #for file in glob.glob(sys.argv[3]):
+        for file in glob.glob(path_here):
             images[os.path.basename(file)]=cv2.imread(file)
             arr.append(os.path.basename(file))
         k = int(sys.argv[2])
+        #print(images)
+        #print(arr)
         part1_function(images,arr,k)
+
 
 
     if part_number == "part2":
