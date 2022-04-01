@@ -89,19 +89,25 @@ I used aove matrix along with point correspondenses to find linear equations and
 <br>
 We also tested the transformations on the building image which was in the assignment named as scene1 and scene2. <br>
 ![Alt text](https://media.github.iu.edu/user/18152/files/6bcf1296-ab52-449e-8797-2d02efe0c373)
-<br>
+
+
+
 The results from those images are as follows.<br>
 We tested both types of transformations which are as follows:
 The corresponding point matches of the above images were manually found out using Paint.<br>
 1) Transforming scene2 as per scene1:<br>
 Following command was run to test this.<br>
 python a2.py part2 4 scene2.jpg scene1.jpg scene_output1.jpg 476,243 220,328 449,246 192,332 700,73 442,158 671,363 414,449<br>
-![Alt text](https://media.github.iu.edu/user/18152/files/6ef2fa5c-f2a5-4ef8-bc2f-6f1da09bf6cd)<br>
+![Alt text](https://media.github.iu.edu/user/18152/files/6ef2fa5c-f2a5-4ef8-bc2f-6f1da09bf6cd)
+
+
 2) Transforming scene1 as per scene2:<br>
 Following command was run to test this.<br>
 python a2.py part2 4 scene1.jpg scene2.jpg scene_output2.jpg 220,328 476,243 192,332 449,246 442,158 700,73 414,449 671,363<br>
 ![Alt text](https://media.github.iu.edu/user/18152/files/18806cc7-9be0-481c-9456-04d59b7c523a)
-<br>
+
+
+
 
 ## Limitations:
 The code fails to tranform the image correctly if the corresponding points have errors.
