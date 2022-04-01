@@ -10,18 +10,10 @@ from scipy.cluster.hierarchy import dendrogram
 import os
 import glob
 
-#Code for ORB matches matrix from:https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html
-#From Brute-Force Matching with SIFT Descriptors and Ratio Test
+#Code for ORB matches from:https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html
+#From Brute-Force Matching with SIFT Descriptors and Ratio Test(using ORB instead of SIFT in this case)
 
 def image_matching_and_clustering(images,arr,k):
-    
-    #create dictionary to store the image tuples in
-    points_dictionary={}
-    for i in range(len(arr)):
-        for j in range(i+1, len(arr)):
-            image1 = list(images.keys())[i]
-            image2 = list(images.keys())[j]
-            points_dictionary[(image1,image2)]=None
 
     #matrix of matches to feed the clustering function
     number_of_matches_matrix = np.zeros(shape=(len(images), len(images)))
@@ -47,7 +39,6 @@ def image_matching_and_clustering(images,arr,k):
                 if first_closest.distance/second_closest.distance < 0.70 :
                     good.append(first_closest)
             number_of_matches_matrix[i][j] = len(good)
-            points_dictionary[(image1,image2)]=good
 
             #Switch the order and carry out the same steps as above
             orb_3 = cv2.ORB_create()
@@ -61,7 +52,7 @@ def image_matching_and_clustering(images,arr,k):
                 if first_closest.distance/second_closest.distance < 0.70 :
                     good1.append(first_closest)
             number_of_matches_matrix[j][i] = len(good1)
-            points_dictionary[(image1,image2)]=good1
+            
 
     #AgglomerativeClustering Function from https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AgglomerativeClustering.html
     clustering = AgglomerativeClustering(n_clusters=k,affinity='cosine',linkage='complete').fit(number_of_matches_matrix).labels_
