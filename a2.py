@@ -10,13 +10,8 @@ from scipy.cluster.hierarchy import dendrogram
 import os
 import glob
 
-#Code for matching part is from: https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html
-#(specifically Brute-Force Matching with SIFT Descriptors and Ratio Test with ORB instead of SIFT)
-
 def part1_function(images,arr,k):
-    #filename1=sys.argv[4]
-    #filename2=sys.argv[5]
-    #print(sys.argv)
+    
 
     #create dictionary to store the image tuples in
     points_dictionary={}
@@ -68,17 +63,7 @@ def part1_function(images,arr,k):
 
     print(number_of_matches_matrix)
 
-    #https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AgglomerativeClustering.html
-
-    #Perform clustering twice
-    #clustering = AgglomerativeClustering(n_clusters=k,affinity='cosine',linkage='complete').fit(number_of_matches_matrix).labels_
-    #clustering = AgglomerativeClustering(n_clusters=k,affinity='euclidean',linkage='complete').fit(number_of_matches_matrix).labels_
-    #z= zip(arr,clustering)
-    #new_list=list(z)
-
-
     clustering = AgglomerativeClustering(n_clusters=k,affinity='cosine',linkage='complete').fit(number_of_matches_matrix).labels_
-    #clustering = AgglomerativeClustering(n_clusters=k,affinity='euclidean',linkage='complete').fit(number_of_matches_matrix).labels_
 
     z= zip(arr,clustering)        
     new_list=list(z)
@@ -296,7 +281,71 @@ def transform(n,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4
         return matrix
 
 def letsStitch(image1,image2,bestTransMat,invTransMat):
-    pass
+    image2_h, image2_w, image2_ch = image2.shape
+    print(image2_h, image2_w, image2_ch)
+
+    # Top-Left Corner
+    pt1  = np.array([0,0,1])
+    pt1_ = np.dot(invTransMat,pt1)
+    pt1_ = pt1_/pt1_[2]
+    
+    # Top-Right Corner
+    pt2  = np.array([0,image2_h-1,1])
+    pt2_ = np.dot(invTransMat,pt2)
+    pt2_ = pt2_/pt2_[2]
+    
+    # Bottom-Left Corner
+    pt3  = np.array([image2_w-1,0,1])
+    pt3_ = np.dot(invTransMat,pt3)
+    pt3_ = pt3_/pt3_[2]
+
+    # Bottom-Right Corner
+    pt4  = np.array([image2_w-1,image2_h-1,1])
+    pt4_ = np.dot(invTransMat,pt4)
+    pt4_ = pt4_/pt4_[2]
+
+    # Calculate new width
+    # To determine the new size of the stitched image, we have to add the values from
+    # image2 corners that fall outside of image1's width and height.
+    image1_h, image1_w, image1_ch = image1.shape
+
+    # Added 0 when finding the minimum values, because if image2 corners fall within image1's size, then padding is 0
+    min_x = np.round(min(0, pt1_[0], pt2_[0], pt3_[0], pt4_[0])).astype(int)    # The offset for x when adding stitched values of image2
+    min_y = np.round(min(0, pt1_[1], pt2_[1], pt3_[1], pt4_[1])).astype(int)    # The offset for y when adding stitched values of image2
+    offset_x = np.abs(min_x)   # This is the padding added to the right of image1's width (offset of x)
+    offset_y = np.abs(min_y)   # This is the padding added to the top of image1's height (offset of y)
+
+    # I added image1's height and width when finding the maximum value of image2's projected corners
+    # so the padding will be 0 if image2's corners fall within image1's height and width
+    max_x = np.round(max(image1_w, pt1_[0], pt2_[0], pt3_[0], pt4_[0])).astype(int)
+    max_y = np.round(max(image1_h, pt1_[1], pt2_[1], pt3_[1], pt4_[1])).astype(int)
+
+    # To find the padding values for the left and bottom of image1, we only want to find the offset to pad it with, so we
+    # subtract the maximum x and y values found from projecting image2's corners with image1's height and width respectively
+    new_width = offset_x + image1_w + np.abs(image1_w-max_x)
+    new_height = offset_y + image1_h + np.abs(image1_h-max_y)
+
+    stitched_image = np.zeros((new_height, new_width, 3))
+
+    for y in range(image1_h):
+        for x in range(image1_w):
+            # The offset for x is the min_x value we calculated earlier, and likewise for y
+            stitched_image[y+offset_y, x+offset_x] = image1[y, x]
+    
+    stitched_image_h, stitched_image_w, c = stitched_image.shape
+
+    print("\tTransferring pixels from the second image to the stitched image")
+    for y in range(min_y, stitched_image_h):
+        for x in range(min_x, stitched_image_w):
+            if y+offset_y < stitched_image_h and x+offset_x < stitched_image_w:
+                pt  = np.array([x,y,1])
+                pt_ = np.dot(bestTransMat,pt)
+                pt_ = pt_/pt_[2]
+                if 0 < pt_[0] < image2_w and 0 < pt_[1] < image2_h:
+                    pixel = cv2.getRectSubPix(image2, (1, 1), (pt_[0], pt_[1]))
+                    stitched_image[y+offset_y, x+offset_x] = pixel
+    
+    return stitched_image
 
 
 
@@ -306,24 +355,10 @@ if __name__=="__main__":
         print("starting Part 1:")
         images ={}
         arr=[]
-        print("path")
-        print(sys.argv[3])
-        #path_len=len(sys.argv[3])
-        #path_here=sys.argv[3][:path_len-5]
-        #print(path_here)
-        #print(glob.glob(sys.argv[3]))
-        path_here=sys.argv[3].split("/",1)[0]
-        #print(sys.argv[3].split("/",1)[1])
-        #print(path_here)
-        path_here=path_here+"/*."+sys.argv[3][-3:]
-        print(path_here)
-        #for file in glob.glob(sys.argv[3]):
-        for file in glob.glob(path_here):
+        for file in glob.glob(sys.argv[3]):
             images[os.path.basename(file)]=cv2.imread(file)
             arr.append(os.path.basename(file))
         k = int(sys.argv[2])
-        #print(images)
-        #print(arr)
         part1_function(images,arr,k)
 
 
@@ -407,7 +442,7 @@ if __name__=="__main__":
                 #print("pt_",pt_)
                 #print("pt2",pt2)
                 #find euclidean distance between the transformed point and the actual point from the descriptor
-                if np.sqrt(np.sum((pt_-pt2)**2)) < 0.5:
+                if np.sqrt(np.sum((pt_-pt2)**2)) < 0.7:
                     inliers += 1
             print(inliers)
             if inliers > max_inliers:
@@ -423,4 +458,5 @@ if __name__=="__main__":
         transformed_image.save("lets-see.jpg")
 
         #We need the best transformation matrix and the inv transformation matrix.
-        stitched_img=letsStitch(image_name1,image_name2,best_transformation,inverse_tm)
+        stitched_img=letsStitch(image1,image2,best_transformation,inverse_tm)
+        cv2.imwrite('stitched.jpg', stitched_img)
