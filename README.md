@@ -1,10 +1,10 @@
-## Part 1: Image matching and clustering
+# Part 1: Image matching and clustering
 
 
-### Problem Definition
+## Problem Definition
 In this problem, we had to find matches between the pairs of images given and use a clustering algorithm to cluster the images that have the most matches among themselves. 
 
-### Function Definition
+## Function Definition
 For this part, we have written a function:image_matching_and_clustering() which takes 3 arguments: 
 
 1. images, which is an array consisting of numpy arrays of each image
@@ -14,7 +14,7 @@ For this part, we have written a function:image_matching_and_clustering() which 
 This function will take these parameters and cluster the images given according to a clustering algorithm(Agglomerative Clustering in this case) and give us clusters of images.
 There are 2 parts to this function: image matching and clustering. 
 
-### Image Matching
+## Image Matching
 Image matching is a technique where we try and find similar "features" of 2 images and match them.
 There can be multiple images of the same object taken but they might have different orientations, different lighting and even different scale. But they are ultimately, the images of the same object and should be categorized as such.
 
@@ -24,7 +24,7 @@ There can be multiple images of the same object taken but they might have differ
 
 According to the Lowe test, if the ratio of the distance of the closest and second closest match is below a certain threshold, we can consider that to be a good match, otherwise, we eliminate those keypoints.
 
-### Image Clustering
+## Image Clustering
 
 1. After finding the good keypoint matches for each pair of images, we performed clustering on the matrix obtained. We used the AgglomerativeClustering library function to perform this operation. (https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AgglomerativeClustering.html). We tried various affinity parameter values and linkages, and cosine affinity and complete linkage Agglomerative clustering gave us the best results. We obtain the image and the cluster number it belongs to in the result for each image. 
    
@@ -34,7 +34,7 @@ According to the Lowe test, if the ratio of the distance of the closest and seco
    
 4. To store the clusters in a text file, we just used the first dictionary which had the cluster numbers and images corresponding to that cluster. We wrote each cluster into the file line by line. 
 
-### Sample Case
+## Sample Case
 
 For all the images in the given dataset, if we set the number of clusters to 18, we get the following result.
 
@@ -47,10 +47,10 @@ The output file that we obtain is:
 ![Successful Case](./part1-special-cases/good_case_1.png)
 
 
-### Limitations
+## Limitations
 
 
-#### 1. Failure Cases
+### 1. Failure Cases
 During the calculation of the clusters, for certain cases, there were failures. For example, for this case: 
 
         python3 a2.py part1 3 part1-images/bigben_2.jpg part1-images/bigben_7.jpg part1-images/bigben_8.jpg part1-images/eiffel_18.jpg part1-images/eiffel_19.jpg part1-images/colosseum_8.jpg part1-images/colosseum_11.jpg output1.txt
@@ -62,12 +62,7 @@ the accuracy came out to be only 47.61%. There were 0 true positives and 20 true
 As you can see that, despite the bigben_8.jpg, bigben_7.jpg and bigben_2.jpg being images of the same monument, they are in different clusters. This failure may occur because of the python Agglomerative Clustering function being used with different parameters. It may also be possible that the images, despite being of the same monument, might not have many matching points as expected due to the their different orientations, lighting and angles. 
 
 
-<<<<<<< HEAD
-
-## Part 2: Image transformations
-=======
 # Part 2: Image transformations
->>>>>>> 0d8dcd674508c0f05c2306ae9fb77f0bd9c68bad
 
 ### Image Warping:
 Image warping means that the image is transformed using a 3x3 Transformation matrix.
