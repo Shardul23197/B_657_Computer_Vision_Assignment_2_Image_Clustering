@@ -10,9 +10,11 @@ from scipy.cluster.hierarchy import dendrogram
 import os
 import glob
 
+#Code for ORB matches matrix from:https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html
+#From Brute-Force Matching with SIFT Descriptors and Ratio Test
+
 def part1_function(images,arr,k):
     
-
     #create dictionary to store the image tuples in
     points_dictionary={}
     for i in range(len(arr)):
@@ -61,8 +63,7 @@ def part1_function(images,arr,k):
             number_of_matches_matrix[j][i] = len(good1)
             points_dictionary[(image1,image2)]=good1
 
-    #print(number_of_matches_matrix)
-
+    #AgglomerativeClustering Function from https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AgglomerativeClustering.html
     clustering = AgglomerativeClustering(n_clusters=k,affinity='cosine',linkage='complete').fit(number_of_matches_matrix).labels_
 
     z= zip(arr,clustering)        
@@ -87,13 +88,13 @@ def part1_function(images,arr,k):
     true_positives=0
     true_negatives=0
 
-    count=0
+    
 
     #find pairs of images that should be in the same cluster and are in the same cluster(True positive)
     #also find pairs of images that shouldn't be in the same cluster and aren't(True negative)
     for i in range(0,len(res)):
         for j in range(i+1, len(res)):
-            count+=2
+            
             i1=res[i][0]
             i2=res[j][0]
             i_1 = i1.replace("_", "")
@@ -117,10 +118,6 @@ def part1_function(images,arr,k):
                 true_positives+=1
             elif im3!=im4 and dictionary_list_2[i3]!=dictionary_list_2[i4]:
                 true_negatives+=1
-
-
-    #print(count)
-
     print("Number of true positives: ", true_positives)
     print("Number of true negatives: ",true_negatives)
     #Calculate the accuracy
@@ -129,15 +126,15 @@ def part1_function(images,arr,k):
     print(accuracy)
 
     filename=sys.argv[-1]
-    #print(filename)
     list_of_cluster_indexes=list(dictionary_list_1.keys())
-    #print(list_of_cluster_indexes)
-
+    print("Writing clusters to file")
     #Writing the clustering results in file
     for i in range(0,len(list_of_cluster_indexes)):
         line_here=dictionary_list_1[list_of_cluster_indexes[i]]
         with open(filename, 'a') as f:
             for j in range(len(line_here)):
+                if "/" in line_here[j]:
+                    line_here[j]=line_here[j].split("/")[1]
                 f.write(line_here[j]+" ")
             f.write("\n")
 
@@ -153,8 +150,6 @@ def orb_descriptor(image1,image2):
     print("---------------------------------------------",len(matches))
     good = []
     for first_closest,second_closest in matches:
-        #print(first_closest.distance,first_closest)
-        #print(second_closest.distance,second_closest)
         if first_closest.distance/second_closest.distance < 0.9 :
             good.append(first_closest)
     img3 = cv2.drawMatches(image1,kp1,image2,kp2,good,None)
@@ -165,8 +160,6 @@ def orb_descriptor(image1,image2):
     for match in good:
         query_index=match.queryIdx
         train_index=match.trainIdx
-        #image_index = match.imgIdx
-        #final_points[kp1[query_index].pt]=kp2[train_index].pt
         image1_points.append(kp1[query_index].pt)
         image2_points.append(kp2[train_index].pt)
     return image1_points, image2_points
@@ -352,32 +345,21 @@ def letsStitch(image1,image2,bestTransMat,invTransMat):
 
 
 if __name__=="__main__":
+    if len(sys.argv) < 4:
+        print("Insufficient arguments given! Exiting code")
+        sys.exit(0)
     part_number = sys.argv[1]
     if part_number == "part1":
         print("starting Part 1:")
         images ={}
         arr=[]
-        print("path")
-        #print(sys.argv[3])
-        #path_len=len(sys.argv[3])
-        #path_here=sys.argv[3][:path_len-5]
-        #print(path_here)
-        #print(glob.glob(sys.argv[3]))
-        path_here=sys.argv[3].split("/",1)[0]
-        print(sys.argv[3].split("/",1)[1])
-        #print(path_here)
-        #file_extension=
-        file_extension=sys.argv[3].split(".",1)[1]
-        #path_here=path_here+"/*."+sys.argv[3][-3:]
-        path_here=path_here+"/*."+file_extension
-        print(path_here)
-        #for file in glob.glob(sys.argv[3]):
-        for file in glob.glob(path_here):
-            images[os.path.basename(file)]=cv2.imread(file)
-            arr.append(os.path.basename(file))
+        images_index=0
+        for i in range(3,len(sys.argv)-1):
+            images[images_index]=cv2.imread(sys.argv[i])
+            arr.append(sys.argv[i])
+            images_index+=1
+
         k = int(sys.argv[2])
-        #print(images)
-        #print(arr)
         part1_function(images,arr,k)
 
 
