@@ -1,7 +1,10 @@
-# Part 1: Image matching and clustering
+## Part 1: Image matching and clustering
 
 
-## Function used
+### Problem Definition
+In this problem, we had to find matches between the pairs of images given and use a clustering algorithm to cluster the images that have the most matches among themselves. 
+
+### Function Definition
 For this part, we have written a function:image_matching_and_clustering() which takes 3 arguments: 
 
 1. images, which is an array consisting of numpy arrays of each image
@@ -31,19 +34,36 @@ According to the Lowe test, if the ratio of the distance of the closest and seco
    
 4. To store the clusters in a text file, we just used the first dictionary which had the cluster numbers and images corresponding to that cluster. We wrote each cluster into the file line by line. 
 
-## Limitations
+### Sample Case
 
-1. During the calculation of the clusters, for certain cases, there were failures. For example, for this case: 
+For all the images in the given dataset, if we set the number of clusters to 18, we get the following result.
+
+
+![Successful Case](./part1-special-cases/good_case_code.png)
+
+
+The output file that we obtain is: 
+
+![Successful Case](./part1-special-cases/good_case_1.png)
+
+
+### Limitations
+
+
+#### 1. Failure Cases
+During the calculation of the clusters, for certain cases, there were failures. For example, for this case: 
 
         python3 a2.py part1 3 part1-images/bigben_2.jpg part1-images/bigben_7.jpg part1-images/bigben_8.jpg part1-images/eiffel_18.jpg part1-images/eiffel_19.jpg part1-images/colosseum_8.jpg part1-images/colosseum_11.jpg output1.txt
 
 the accuracy came out to be only 47.61%. There were 0 true positives and 20 true negatives. 
 
-![Failure Case 1](./part1-badcases/failure_case_1.png)
+![Failure Case 1](./part1-special-cases/failure_case_1.png)
+
+As you can see that, despite the bigben_8.jpg, bigben_7.jpg and bigben_2.jpg being images of the same monument, they are in different clusters. This failure may occur because of the python Agglomerative Clustering function being used with different parameters. It may also be possible that the images, despite being of the same monument, might not have many matching points as expected due to the their different orientations, lighting and angles. 
 
 
 
-# Part 2: Image transformations
+## Part 2: Image transformations
 
 ### Image Warping:
 Image warping means that the image is transformed using a 3x3 Transformation matrix.

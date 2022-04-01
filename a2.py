@@ -119,7 +119,7 @@ def image_matching_and_clustering(images,arr,k):
 
     filename=sys.argv[-1]
     list_of_cluster_indexes=list(dictionary_list_1.keys())
-    print("Writing clusters to file")
+    print("Writing clusters to file "+filename)
     #Writing the clustering results in file
     for i in range(0,len(list_of_cluster_indexes)):
         line_here=dictionary_list_1[list_of_cluster_indexes[i]]
