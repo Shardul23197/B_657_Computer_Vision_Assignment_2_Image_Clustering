@@ -42,7 +42,6 @@ the accuracy came out to be only 47.61%. There were 0 true positives and 20 true
 ![Failure Case 1](./part1-badcases/failure_case_1.png)
 
 
-
 # Part 2: Image transformations
 
 ### Image Warping:
@@ -51,29 +50,42 @@ We have written a function warp() which takes an image which is to be transforme
 We have used bilinear interpolation along with inverse warping as specified in the assignemnt. Using inverse warping aviods holes in the warped image and bilinear transformation helps smoothen the image.
 To write the code for bilinear transformation, I watched the following video https://youtu.be/UhGEtSdBwIQ  and followed its steps.
 To test this function we tested it on the given "lincoln.jpg" image to confirm if warp() worked correctly.
+![Alt text](https://media.github.iu.edu/user/18152/files/98ca624d-98af-4485-96c9-cce2380899dd)
 
-<br> <br>
+<br> 
 ### Finding the transformation matrix from given correspondenses:
 
 The results for transformation on the book image from the assignemnt are:<br>
 
 **1) Translation n=1:** <br>
+Translation uses only one pair of point correspondence between 2 images.<br>
 ![Alt text](https://media.github.iu.edu/user/18152/files/ad69aaa2-04ff-4ad2-b01c-614485789c21)
-
-
+<br>
 **2) Euclidean n=2:**<br>
-![Alt text](https://media.github.iu.edu/user/18152/files/a2dc1e72-ccb2-4f40-b8c0-78a64123c766)
+Euclidean transformation consists of Translation as well as Rotation.
+The transformation matrix here will be of the following format<br>
+![Alt text](https://media.github.iu.edu/user/18152/files/a4d4c7b4-c1c5-44c9-805d-8cad0be177ee)
 
-**1) Affine n=3:**<br>
+Here a and b are the cosins(theta) and sine(theta) terms where theta is the angle of rotation. c and d are the translations.
+I used above matrix along with point correspondenses to find linear equations and solved the linear system of equations to find the 4 unknowns.<br>
+![Alt text](https://media.github.iu.edu/user/18152/files/a2dc1e72-ccb2-4f40-b8c0-78a64123c766)
+<br>
+**3) Affine n=3:**<br>
+There are 6 unknowns to find in the transformation matrix for affine transformation.
+![Alt text](https://media.github.iu.edu/user/18152/files/7b34e7cc-418c-4e75-9835-6cf9cd7e1430)
+I used above matrix along with point correspondenses to find linear equations and solved the linear system of equations to find the 6 unknowns.<br>
 ![Alt text](https://media.github.iu.edu/user/18152/files/dd09c93b-79ab-458e-84f5-a94946e1c17d)
 
-**1) Projective n=4:**<br>
+**4) Projective n=4:**<br>
+There are 9 unknowns in the transformation matri for projective transformation. <br>
+I used the method shown by the professor in one of the ppts to solve the projective transformation.<br>
+I used aove matrix along with point correspondenses to find linear equations and solved the linear system of equations to find the 4 unknowns.<br>
 ![Alt text](https://media.github.iu.edu/user/18152/files/9088ca4c-7bf0-4d6e-82fb-bbc046a0bfcf)
 
-
+<br>
 We also tested the transformations on the building image which was in the assignment named as scene1 and scene2. <br>
 ![Alt text](https://media.github.iu.edu/user/18152/files/ebd243e5-da8f-4852-9a7a-111bd5aef0ce)
-
+<br>
 The results from those images are as follows.<br>
 We tested both types of transformations which are as follows:
 The corresponding point matches of the above images were manually found out using Paint.<br>
@@ -84,8 +96,7 @@ python a2.py part2 4 scene2.jpg scene1.jpg scene_output1.jpg 476,243 220,328 449
 2) Transforming scene1 as per scene2:<br>
 python a2.py part2 4 scene1.jpg scene2.jpg scene_output2.jpg 220,328 476,243 192,332 449,246 442,158 700,73 414,449 671,363
 ![Alt text](https://media.github.iu.edu/user/18152/files/6091d3f2-6fa9-4b54-a69f-0b63ce857193)
-
-
+<br>
 
 ## Limitations:
 The code fails to tranform the image correctly if the corresponding points have errors.
