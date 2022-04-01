@@ -11,9 +11,6 @@ import os
 import glob
 
 def part1_function(images,arr,k):
-    
-
-    #create dictionary to store the image tuples in
     points_dictionary={}
     for i in range(len(arr)):
         for j in range(i+1, len(arr)):
@@ -21,33 +18,22 @@ def part1_function(images,arr,k):
             image2 = list(images.keys())[j]
             points_dictionary[(image1,image2)]=None
 
-    #matrix of matches to feed the clustering function
     number_of_matches_matrix = np.zeros(shape=(len(images), len(images)))
     for i in range(len(images)):
         for j in range(i+1, len(images)):
-            #create orb object for image 1 and find keypoints and descriptors
             orb_1 = cv2.ORB_create()
             kp1, des1 = orb_1.detectAndCompute(list(images.values())[i],None)
-
-            #create orb object for image 2 and find keypoints and descriptors
             orb_2 = cv2.ORB_create()
             kp2, des2 = orb_2.detectAndCompute(list(images.values())[j],None)
-
-            #use brute force matching and knnMatch to find matching points.
-            #We take k=2 to get the 2 closest matching points
             bf = cv2.BFMatcher(cv2.NORM_HAMMING,crossCheck=False)
             matches = bf.knnMatch(des1,des2,k=2)
             good = []
             for first_closest,second_closest in matches:
-                #apply thresholding to get better matches
-                #if the closest distance is much smaller than the second closest distance,
-                #then that's a good match
-                if first_closest.distance/second_closest.distance < 0.70 :
+                if first_closest.distance/second_closest.distance < 0.9 :
                     good.append(first_closest)
             number_of_matches_matrix[i][j] = len(good)
             points_dictionary[(image1,image2)]=good
 
-            #Switch the order and carry out the same steps as above
             orb_3 = cv2.ORB_create()
             kp3, des3 = orb_3.detectAndCompute(list(images.values())[j],None)
             orb_4 = cv2.ORB_create()
@@ -56,20 +42,23 @@ def part1_function(images,arr,k):
             matches1 = bf1.knnMatch(des3,des4,k=2)
             good1 = []
             for first_closest,second_closest in matches1:
-                if first_closest.distance/second_closest.distance < 0.70 :
+                if first_closest.distance/second_closest.distance < 0.9 :
                     good1.append(first_closest)
             number_of_matches_matrix[j][i] = len(good1)
             points_dictionary[(image1,image2)]=good1
 
-    print(number_of_matches_matrix)
+
+    clustering = AgglomerativeClustering(n_clusters=k,affinity='cosine',linkage='complete').fit(number_of_matches_matrix).labels_
+    z= zip(arr,clustering)
+    new_list=list(z)
+
 
     clustering = AgglomerativeClustering(n_clusters=k,affinity='cosine',linkage='complete').fit(number_of_matches_matrix).labels_
 
     z= zip(arr,clustering)        
     new_list=list(z)
     res = sorted(new_list, key = lambda x: x[1])
-    print("Length")
-    print(len(res))
+
 
     dictionary_list_1={}
     dictionary_list_2={}
@@ -88,9 +77,6 @@ def part1_function(images,arr,k):
     true_negatives=0
 
     count=0
-
-    #find pairs of images that should be in the same cluster and are in the same cluster(True positive)
-    #also find pairs of images that shouldn't be in the same cluster and aren't(True negative)
     for i in range(0,len(res)):
         for j in range(i+1, len(res)):
             count+=2
@@ -100,8 +86,6 @@ def part1_function(images,arr,k):
             i_2 = i2.replace("_", "")
             im1 = ''.join([i for i in i_1 if not i.isdigit()])
             im2 = ''.join([i for i in i_2 if not i.isdigit()])
-
-            #True positive
             if im1==im2 and dictionary_list_2[i1]==dictionary_list_2[i2]:
                 true_positives+=1
             elif im1!=im2 and dictionary_list_2[i1]!=dictionary_list_2[i2]:
@@ -123,12 +107,10 @@ def part1_function(images,arr,k):
 
     print(true_positives)
     print(true_negatives)
-    #Calculate the accuracy
     accuracy=(true_positives+true_negatives)/total_pairs
     print(accuracy)
 
-    filename=sys.argv[-1]
-    print(filename)
+    filename=sys.argv[4]
     list_of_cluster_indexes=list(dictionary_list_1.keys())
     #print(list_of_cluster_indexes)
 
@@ -153,7 +135,7 @@ def orb_descriptor(image1,image2):
     for first_closest,second_closest in matches:
         #print(first_closest.distance,first_closest)
         #print(second_closest.distance,second_closest)
-        if first_closest.distance/second_closest.distance < 0.9 :
+        if first_closest.distance/second_closest.distance < 0.85:
             good.append(first_closest)
     img3 = cv2.drawMatches(image1,kp1,image2,kp2,good,None)
     cv2.imwrite('image.jpg',img3)
@@ -198,11 +180,10 @@ def warp(image_array, inverse_tm):
     dest_image = dest_image.astype(np.uint8)
     return dest_image
 
-def transform(n,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4):
+def transform(n, dest_img_p1, dest_img_p2, dest_img_p3, dest_img_p4, src_img_p1, src_img_p2, src_img_p3, src_img_p4):
     # n = 1
     if n==1:
-        matrix = np.array([[1, 0, abs(img1_p1[0] - img2_p1[0])], [0, 1, abs(img1_p1[1] - img2_p1[1])], [0, 0, 1]])
-        print("Transformation matrix\n",matrix)
+        matrix = np.array([[1, 0, abs(dest_img_p1[0] - src_img_p1[0])], [0, 1, abs(dest_img_p1[1] - src_img_p1[1])], [0, 0, 1]])
         return matrix
     if n == 2:
         # j = [img2_p1, img2_p2]
@@ -215,14 +196,14 @@ def transform(n,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4
         # k = np.array(img1_p2)
         # res2 = np.linalg.solve(j, k)
         matrix = np.array([
-            [img2_p1[0], -img2_p1[1], 1, 0],
-            [img2_p1[1], img2_p1[0], 0, 1],
-            [img2_p2[0], -img2_p2[1], 1, 0],
-            [img2_p2[1], img2_p2[0], 0, 1]
+            [src_img_p1[0], -src_img_p1[1], 1, 0],
+            [src_img_p1[1], src_img_p1[0], 0, 1],
+            [src_img_p2[0], -src_img_p2[1], 1, 0],
+            [src_img_p2[1], src_img_p2[0], 0, 1]
         ])
 
         mat_b = np.array(
-            [[img1_p1[0]], [img1_p1[1]], [img1_p2[0]], [img1_p2[1]]])
+            [[dest_img_p1[0]], [dest_img_p1[1]], [dest_img_p2[0]], [dest_img_p2[1]]])
         x = np.linalg.solve(matrix, mat_b)
         print("x",x)
         # x = np.append(x, [0, 0, 1])
@@ -231,78 +212,76 @@ def transform(n,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4
             [x[1],x[0],x[3]],
             [0,0,1]
         ],dtype=float)
-        print("Transformation matrix\n",matrix)
 
         return matrix
 
     if n == 3:
 
         matrix = np.array([
-            [img2_p1[0], img2_p1[1], 1, 0, 0, 0],
-            [0, 0, 0, img2_p1[0], img2_p1[1], 1],
-            [img2_p2[0], img2_p2[1], 1, 0, 0, 0],
-            [0, 0, 0, img2_p2[0], img2_p2[1], 1],
-            [img2_p3[0], img2_p3[1], 1, 0, 0, 0],
-            [0, 0, 0, img2_p3[0], img2_p3[1], 1]])
+            [src_img_p1[0], src_img_p1[1], 1, 0, 0, 0],
+            [0, 0, 0, src_img_p1[0], src_img_p1[1], 1],
+            [src_img_p2[0], src_img_p2[1], 1, 0, 0, 0],
+            [0, 0, 0, src_img_p2[0], src_img_p2[1], 1],
+            [src_img_p3[0], src_img_p3[1], 1, 0, 0, 0],
+            [0, 0, 0, src_img_p3[0], src_img_p3[1], 1]])
 
         mat_b = np.array(
-            [[img1_p1[0]], [img1_p1[1]], [img1_p2[0]], [img1_p2[1]], [img1_p3[0]], [img1_p3[1]]])
+            [[dest_img_p1[0]], [dest_img_p1[1]], [dest_img_p2[0]], [dest_img_p2[1]], [dest_img_p3[0]], [dest_img_p3[1]]])
         x = np.linalg.solve(matrix, mat_b)
         x = np.append(x, [0,0,1])
         # print(x)
         # print(x.reshape((3, 3)))
         matrix = x.reshape((3, 3))
         # matrix = np.array([res1, res2, [0, 0, 1]])
-        print("Transformation matrix\n",matrix)
 
         return matrix
 
     if n == 4:
         matrix = np.array([
-            [img2_p1[0], img2_p1[1], 1, 0, 0, 0, -img1_p1[0] * img2_p1[0], -img1_p1[0] * img2_p1[1]],
-            [0, 0, 0, img2_p1[0], img2_p1[1], 1, -img1_p1[1] * img2_p1[0], -img1_p1[1] * img2_p1[1]],
-            [img2_p2[0], img2_p2[1], 1, 0, 0, 0, -img1_p2[0] * img2_p2[0], -img1_p2[0] * img2_p2[1]],
-            [0, 0, 0, img2_p2[0], img2_p2[1], 1, -img1_p2[1] * img2_p2[0], -img1_p2[1] * img2_p2[1]],
-            [img2_p3[0], img2_p3[1], 1, 0, 0, 0, -img1_p3[0] * img2_p3[0], -img1_p3[0] * img2_p3[1]],
-            [0, 0, 0, img2_p3[0], img2_p3[1], 1, -img1_p3[1] * img2_p3[0], -img1_p3[1] * img2_p3[1]],
-            [img2_p4[0], img2_p4[1], 1, 0, 0, 0, -img1_p4[0] * img2_p4[0], -img1_p4[0] * img2_p4[1]],
-            [0, 0, 0, img2_p4[0], img2_p4[1], 1, -img1_p4[1] * img2_p4[0], -img1_p4[1] * img2_p4[1]]])
+            [src_img_p1[0], src_img_p1[1], 1, 0, 0, 0, -dest_img_p1[0] * src_img_p1[0], -dest_img_p1[0] * src_img_p1[1]],
+            [0, 0, 0, src_img_p1[0], src_img_p1[1], 1, -dest_img_p1[1] * src_img_p1[0], -dest_img_p1[1] * src_img_p1[1]],
+            [src_img_p2[0], src_img_p2[1], 1, 0, 0, 0, -dest_img_p2[0] * src_img_p2[0], -dest_img_p2[0] * src_img_p2[1]],
+            [0, 0, 0, src_img_p2[0], src_img_p2[1], 1, -dest_img_p2[1] * src_img_p2[0], -dest_img_p2[1] * src_img_p2[1]],
+            [src_img_p3[0], src_img_p3[1], 1, 0, 0, 0, -dest_img_p3[0] * src_img_p3[0], -dest_img_p3[0] * src_img_p3[1]],
+            [0, 0, 0, src_img_p3[0], src_img_p3[1], 1, -dest_img_p3[1] * src_img_p3[0], -dest_img_p3[1] * src_img_p3[1]],
+            [src_img_p4[0], src_img_p4[1], 1, 0, 0, 0, -dest_img_p4[0] * src_img_p4[0], -dest_img_p4[0] * src_img_p4[1]],
+            [0, 0, 0, src_img_p4[0], src_img_p4[1], 1, -dest_img_p4[1] * src_img_p4[0], -dest_img_p4[1] * src_img_p4[1]]])
 
         mat_b = np.array(
-            [[img1_p1[0]], [img1_p1[1]], [img1_p2[0]], [img1_p2[1]], [img1_p3[0]], [img1_p3[1]], [img1_p4[0]],
-             [img1_p4[1]]])
+            [[dest_img_p1[0]], [dest_img_p1[1]], [dest_img_p2[0]], [dest_img_p2[1]], [dest_img_p3[0]], [dest_img_p3[1]], [dest_img_p4[0]],
+             [dest_img_p4[1]]])
 
         x = np.linalg.solve(matrix, mat_b)
         x = np.append(x, [1])
         # print(x.reshape((3, 3)))
         matrix = x.reshape((3, 3))
-        print("Transformation matrix\n",matrix)
 
         return matrix
 
-def letsStitch(image1,image2,bestTransMat,invTransMat):
+
+def letsStitch(image1, image2, bestTransMat, invTransMat):
     image2_h, image2_w, image2_ch = image2.shape
     print(image2_h, image2_w, image2_ch)
 
     # Top-Left Corner
-    pt1  = np.array([0,0,1])
-    pt1_ = np.dot(invTransMat,pt1)
-    pt1_ = pt1_/pt1_[2]
-    
+    pt1 = np.array([0, 0, 1])
+    pt1_ = np.dot(invTransMat, pt1)
+    pt1_ = pt1_ / pt1_[2]
+
     # Top-Right Corner
-    pt2  = np.array([0,image2_h-1,1])
-    pt2_ = np.dot(invTransMat,pt2)
-    pt2_ = pt2_/pt2_[2]
-    
+    pt2 = np.array([0, image2_h - 1, 1])
+    pt2_ = np.dot(invTransMat, pt2)
+    pt2_ = pt2_ / pt2_[2]
+
     # Bottom-Left Corner
-    pt3  = np.array([image2_w-1,0,1])
-    pt3_ = np.dot(invTransMat,pt3)
-    pt3_ = pt3_/pt3_[2]
+    pt3 = np.array([image2_w - 1, 0, 1])
+    pt3_ = np.dot(invTransMat, pt3)
+    pt3_ = pt3_ / pt3_[2]
 
     # Bottom-Right Corner
-    pt4  = np.array([image2_w-1,image2_h-1,1])
-    pt4_ = np.dot(invTransMat,pt4)
-    pt4_ = pt4_/pt4_[2]
+    pt4 = np.array([image2_w - 1, image2_h - 1, 1])
+    pt4_ = np.dot(invTransMat, pt4)
+    pt4_ = pt4_ / pt4_[2]
 
     # Calculate new width
     # To determine the new size of the stitched image, we have to add the values from
@@ -310,10 +289,12 @@ def letsStitch(image1,image2,bestTransMat,invTransMat):
     image1_h, image1_w, image1_ch = image1.shape
 
     # Added 0 when finding the minimum values, because if image2 corners fall within image1's size, then padding is 0
-    min_x = np.round(min(0, pt1_[0], pt2_[0], pt3_[0], pt4_[0])).astype(int)    # The offset for x when adding stitched values of image2
-    min_y = np.round(min(0, pt1_[1], pt2_[1], pt3_[1], pt4_[1])).astype(int)    # The offset for y when adding stitched values of image2
-    offset_x = np.abs(min_x)   # This is the padding added to the right of image1's width (offset of x)
-    offset_y = np.abs(min_y)   # This is the padding added to the top of image1's height (offset of y)
+    min_x = np.round(min(0, pt1_[0], pt2_[0], pt3_[0], pt4_[0])).astype(
+        int)  # The offset for x when adding stitched values of image2
+    min_y = np.round(min(0, pt1_[1], pt2_[1], pt3_[1], pt4_[1])).astype(
+        int)  # The offset for y when adding stitched values of image2
+    offset_x = np.abs(min_x)  # This is the padding added to the right of image1's width (offset of x)
+    offset_y = np.abs(min_y)  # This is the padding added to the top of image1's height (offset of y)
 
     # I added image1's height and width when finding the maximum value of image2's projected corners
     # so the padding will be 0 if image2's corners fall within image1's height and width
@@ -322,31 +303,30 @@ def letsStitch(image1,image2,bestTransMat,invTransMat):
 
     # To find the padding values for the left and bottom of image1, we only want to find the offset to pad it with, so we
     # subtract the maximum x and y values found from projecting image2's corners with image1's height and width respectively
-    new_width = offset_x + image1_w + np.abs(image1_w-max_x)
-    new_height = offset_y + image1_h + np.abs(image1_h-max_y)
+    new_width = offset_x + image1_w + np.abs(image1_w - max_x)
+    new_height = offset_y + image1_h + np.abs(image1_h - max_y)
 
     stitched_image = np.zeros((new_height, new_width, 3))
 
     for y in range(image1_h):
         for x in range(image1_w):
             # The offset for x is the min_x value we calculated earlier, and likewise for y
-            stitched_image[y+offset_y, x+offset_x] = image1[y, x]
-    
+            stitched_image[y + offset_y, x + offset_x] = image1[y, x]
+
     stitched_image_h, stitched_image_w, c = stitched_image.shape
 
     print("\tTransferring pixels from the second image to the stitched image")
     for y in range(min_y, stitched_image_h):
         for x in range(min_x, stitched_image_w):
-            if y+offset_y < stitched_image_h and x+offset_x < stitched_image_w:
-                pt  = np.array([x,y,1])
-                pt_ = np.dot(bestTransMat,pt)
-                pt_ = pt_/pt_[2]
+            if y + offset_y < stitched_image_h and x + offset_x < stitched_image_w:
+                pt = np.array([x, y, 1])
+                pt_ = np.dot(bestTransMat, pt)
+                pt_ = pt_ / pt_[2]
                 if 0 < pt_[0] < image2_w and 0 < pt_[1] < image2_h:
                     pixel = cv2.getRectSubPix(image2, (1, 1), (pt_[0], pt_[1]))
-                    stitched_image[y+offset_y, x+offset_x] = pixel
-    
-    return stitched_image
+                    stitched_image[y + offset_y, x + offset_x] = pixel
 
+    return stitched_image
 
 
 if __name__=="__main__":
@@ -366,32 +346,33 @@ if __name__=="__main__":
         #part2 4 part2-images\book2.jpg part2-images\book1.jpg try.jpg 141,131 318,256 480,159 534,372 493,630 316,670 64,601 73,473
         print("Starting Part 2:")
         n = int(sys.argv[2])
-        image_name2 = sys.argv[3]
-        image_name1 = sys.argv[4]
+        src = sys.argv[3]
+        dest = sys.argv[4]
 
-        image1 = Image.open(image_name1)
-        image1 = np.asarray(image1)
+        dest_image = Image.open(dest)
+        dest_image = np.asarray(dest_image)
 
-        image2 = Image.open(image_name2)
-        image2 = np.asarray(image2)
+        src_image = Image.open(src)
+        src_image = np.asarray(src_image)
 
         output_image = sys.argv[5]
-        img2_p1 = np.array([ int(i) for i in sys.argv[6].split(",")])
-        img1_p1 = np.array([ int(i) for i in sys.argv[7].split(",")])
+        src_img_p1 = np.array([ int(i) for i in sys.argv[6].split(",")])
+        dest_img_p1 = np.array([int(i) for i in sys.argv[7].split(",")])
 
-        img2_p2 = np.array([ int(i) for i in sys.argv[8].split(",")])
-        img1_p2 = np.array([ int(i) for i in sys.argv[9].split(",")])
+        src_img_p2 = np.array([int(i) for i in sys.argv[8].split(",")])
+        dest_img_p2 = np.array([ int(i) for i in sys.argv[9].split(",")])
 
-        img2_p3 = np.array([ int(i) for i in sys.argv[10].split(",")])
-        img1_p3 = np.array([ int(i) for i in sys.argv[11].split(",")])
+        src_img_p3 = np.array([ int(i) for i in sys.argv[10].split(",")])
+        dest_img_p3 = np.array([ int(i) for i in sys.argv[11].split(",")])
 
-        img2_p4 = np.array([ int(i) for i in sys.argv[12].split(",")])
-        img1_p4 = np.array([ int(i) for i in sys.argv[13].split(",")])
+        src_img_p4 = np.array([ int(i) for i in sys.argv[12].split(",")])
+        dest_img_p4 = np.array([ int(i) for i in sys.argv[13].split(",")])
 
-        matrix = transform(n,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4)
+        matrix = transform(n, dest_img_p1, dest_img_p2, dest_img_p3, dest_img_p4, src_img_p1, src_img_p2, src_img_p3, src_img_p4)
+        print("Transformation matrix\n",matrix)
 
         inverse_tm = inv(matrix)
-        transformed_image = Image.fromarray(warp(image2, inverse_tm))
+        transformed_image = Image.fromarray(warp(src_image, inverse_tm))
         transformed_image.save(output_image)
 
 
@@ -409,7 +390,7 @@ if __name__=="__main__":
         image2 = np.asarray(image2)
         # call the orb descriptor function to get the orb descriptors and point correspodences.
 
-        points_image1, points_image2 = orb_descriptor(image1,image2)
+        points_image1, points_image2 = orb_descriptor(image1, image2)
         #print("final_points",points_image1,points_image2)
         print("length of final_points",len(points_image2))
         s = 4 # number of samples or point correspondences for homography.
@@ -421,35 +402,42 @@ if __name__=="__main__":
             sample_indices = list(np.random.randint(0,len(points_image1),s))
             #print(sample_indices)
             #print(points_image1[sample_indices[0]])
-            img1_p1,img1_p2,img1_p3,img1_p4 = [points_image1[i] for i in sample_indices]
-            img2_p1,img2_p2,img2_p3 ,img2_p4 = [points_image2[i] for i in sample_indices]
+            img1_p1, img1_p2, img1_p3, img1_p4 = [points_image1[i] for i in sample_indices]
+            img2_p1, img2_p2, img2_p3 , img2_p4 = [points_image2[i] for i in sample_indices]
+
+            query_pts = np.float32([points_image1[i] for i in sample_indices]).reshape(-1,1,2)
+            train_pts = np.float32([points_image2[i] for i in sample_indices]).reshape(-1,1,2)
 
             try:
             #find the projective trasformation
-                matrix = transform(4,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4)
-            #print(matrix)
+                matrix = transform(4,img2_p1,img2_p2,img2_p3 ,img2_p4,img1_p1,img1_p2,img1_p3,img1_p4)
+                # matrix = find_homography(img1_p1, img1_p2, img1_p3, img1_p4, img2_p1, img2_p2, img2_p3, img2_p4)
             except:
                 print("singular matrix. \n------ skipping-------\n")
                 continue
+            # matrix, mask = cv2.findHomography(query_pts, train_pts, cv2.RANSAC, 5.0)
 
             #finding the number of inliers for the above projective transformation
             for i in range(len(points_image1)):
-                pt1  = np.array([points_image2[i][1],points_image2[i][0],1])
+                pt1  = np.array([points_image1[i][0],points_image1[i][1],1])
                 pt_ = np.dot(matrix,pt1)
                 pt_ = pt_/pt_[2]
+                # print(pt_)
 
-                pt2 = np.array([points_image1[i][1],points_image1[i][0],1])
+                pt2 = np.array([points_image2[i][0],points_image2[i][1],1])
                 #print("pt_",pt_)
                 #print("pt2",pt2)
                 #find euclidean distance between the transformed point and the actual point from the descriptor
-                if np.sqrt(np.sum((pt_-pt2)**2)) < 0.7:
+                # print("dist",np.sqrt(np.sum(np.square(pt_-pt2))))
+
+                if np.sqrt(np.sum(np.square(pt_-pt2)))< 0.75:
                     inliers += 1
             print(inliers)
             if inliers > max_inliers:
                 print("------here------!!!!!!!!!!!!!!!")
                 best_transformation = deepcopy(matrix)
                 max_inliers = inliers
-        
+
         print(max_inliers)
         print(best_transformation)
 
@@ -457,6 +445,5 @@ if __name__=="__main__":
         transformed_image = Image.fromarray(warp(image1, inverse_tm))
         transformed_image.save("lets-see.jpg")
 
-        #We need the best transformation matrix and the inv transformation matrix.
-        stitched_img=letsStitch(image1,image2,best_transformation,inverse_tm)
+        stitched_img = letsStitch(image1, image2, best_transformation, inverse_tm)
         cv2.imwrite('stitched.jpg', stitched_img)
