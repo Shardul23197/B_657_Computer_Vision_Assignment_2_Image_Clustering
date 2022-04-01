@@ -87,9 +87,9 @@ I used aove matrix along with point correspondenses to find linear equations and
 ![Alt text](https://media.github.iu.edu/user/18152/files/9088ca4c-7bf0-4d6e-82fb-bbc046a0bfcf)
 
 <br>
-We also tested the transformations on the building image which was in the assignment named as scene1 and scene2. <br>
-![Alt text](https://media.github.iu.edu/user/18152/files/6bcf1296-ab52-449e-8797-2d02efe0c373)
+We also tested the transformations on the building image which was in the assignment named as scene1 and scene2. 
 
+![Alt text](https://media.github.iu.edu/user/18152/files/6bcf1296-ab52-449e-8797-2d02efe0c373)
 
 
 The results from those images are as follows.<br>
