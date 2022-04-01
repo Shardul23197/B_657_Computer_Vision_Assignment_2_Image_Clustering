@@ -61,6 +61,8 @@ The results for transformation on the book image from the assignemnt are:<br>
 Translation uses only one pair of point correspondence between 2 images.<br>
 ![Alt text](https://media.github.iu.edu/user/18152/files/ad69aaa2-04ff-4ad2-b01c-614485789c21)
 <br>
+
+
 **2) Euclidean n=2:**<br>
 Euclidean transformation consists of Translation as well as Rotation.
 The transformation matrix here will be of the following format<br>
@@ -70,9 +72,11 @@ Here a and b are the cosins(theta) and sine(theta) terms where theta is the angl
 I used above matrix along with point correspondenses to find linear equations and solved the linear system of equations to find the 4 unknowns.<br>
 ![Alt text](https://media.github.iu.edu/user/18152/files/a2dc1e72-ccb2-4f40-b8c0-78a64123c766)
 <br>
+
+
 **3) Affine n=3:**<br>
-There are 6 unknowns to find in the transformation matrix for affine transformation.
-![Alt text](https://media.github.iu.edu/user/18152/files/7b34e7cc-418c-4e75-9835-6cf9cd7e1430)
+There are 6 unknowns to find in the transformation matrix for affine transformation.<br>
+![Alt text](https://media.github.iu.edu/user/18152/files/7b34e7cc-418c-4e75-9835-6cf9cd7e1430)<br>
 I used above matrix along with point correspondenses to find linear equations and solved the linear system of equations to find the 6 unknowns.<br>
 ![Alt text](https://media.github.iu.edu/user/18152/files/dd09c93b-79ab-458e-84f5-a94946e1c17d)
 
@@ -90,11 +94,13 @@ The results from those images are as follows.<br>
 We tested both types of transformations which are as follows:
 The corresponding point matches of the above images were manually found out using Paint.<br>
 1) Transforming scene2 as per scene1:<br>
-python a2.py part2 4 scene2.jpg scene1.jpg scene_output1.jpg 476,243 220,328 449,246 192,332 700,73 442,158 671,363 414,449
+Following command was run to test this.<br>
+python a2.py part2 4 scene2.jpg scene1.jpg scene_output1.jpg 476,243 220,328 449,246 192,332 700,73 442,158 671,363 414,449<br>
 ![Alt text](https://media.github.iu.edu/user/18152/files/c21a4a3c-67ed-43a7-898f-04e5e0652c52)
-
+<br>
 2) Transforming scene1 as per scene2:<br>
-python a2.py part2 4 scene1.jpg scene2.jpg scene_output2.jpg 220,328 476,243 192,332 449,246 442,158 700,73 414,449 671,363
+Following command was run to test this.<br>
+python a2.py part2 4 scene1.jpg scene2.jpg scene_output2.jpg 220,328 476,243 192,332 449,246 442,158 700,73 414,449 671,363<br>
 ![Alt text](https://media.github.iu.edu/user/18152/files/6091d3f2-6fa9-4b54-a69f-0b63ce857193)
 <br>
 
@@ -102,7 +108,7 @@ python a2.py part2 4 scene1.jpg scene2.jpg scene_output2.jpg 220,328 476,243 192
 The code fails to tranform the image correctly if the corresponding points have errors.
 We tried to find corresponding points manually on a high resolution image but there are some manual errors which are introduced. This results in a poorly transformed image.
 The following is one such example.
-python a2.py part2 4 src.jpg dest.jpg bhutan.jpg 167,801 617,1133 723,1693 1057,1930 725,2075 1019,2391 335,141 843,437
+python a2.py part2 4 src.jpg dest.jpg bhutan.jpg 167,801 617,1133 723,1693 1057,1930 725,2075 1019,2391 335,141 843,437<br>
 ![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
 
 
