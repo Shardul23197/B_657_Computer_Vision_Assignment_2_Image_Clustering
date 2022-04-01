@@ -364,7 +364,7 @@ if __name__=="__main__":
         #print(path_here)
         #print(glob.glob(sys.argv[3]))
         path_here=sys.argv[3].split("/",1)[0]
-        #print(sys.argv[3].split("/",1)[1])
+        print(sys.argv[3].split("/",1)[1])
         #print(path_here)
         #file_extension=
         file_extension=sys.argv[3].split(".",1)[1]
