@@ -220,6 +220,7 @@ Some successfull blends are shown below
 ![Alt text](https://github.iu.edu/cs-b657-sp2022/sdabhane-sparanjp-athakulk-a2/blob/main/report_images/laptop_stitch.jpg)
 
 ![Alt text](https://github.iu.edu/cs-b657-sp2022/sdabhane-sparanjp-athakulk-a2/blob/main/report_images/vada_stitch.jpg)
+### IMAGE CREDITS: Arpita Welling (aawellin.iu.edu)
 
 ![Alt text](https://github.iu.edu/cs-b657-sp2022/sdabhane-sparanjp-athakulk-a2/blob/main/report_images/chips_stitch.jpg)
 
