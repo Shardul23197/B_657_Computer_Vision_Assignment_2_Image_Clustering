@@ -190,7 +190,7 @@ This step uses the ORB detector. ORB is basically a fusion of FAST keypoint dete
 Our ORB function gives us the matching points in the 2 images. An example of this matching is given below.
 ![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
 
-### Step 2: Figure the relative transformation between the images by implementing RANSAC
+## Step 2: Figure the relative transformation between the images by implementing RANSAC
 Random sample consensus (RANSAC) is an iterative method to estimate parameters of a mathematical model from a set of observed data that contains outliers, when outliers are to be accorded no influence on the values of the estimates. Therefore, it also can be interpreted as an outlier detection method.
 An advantage of RANSAC is its ability to do robust estimation[3] of the model parameters, i.e., it can estimate the parameters with a high degree of accuracy even when a significant number of outliers are present in the data set. A disadvantage of RANSAC is that there is no upper bound on the time it takes to compute these parameters (except exhaustion).
 ### Algorithm RANSAC: 
@@ -218,4 +218,19 @@ An example of this procedure is given below.
 This step involves blending the destination imagage with the Transformed Source Image. 
 Some successfull blends are shown below
 
+![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+
+![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+
+![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+
+![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+
+![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+
 ## Limitations
+We have some failures which are shown below:
+
+![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+
+![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
