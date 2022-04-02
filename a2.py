@@ -156,6 +156,7 @@ def orb_descriptor(image1,image2):
     img3 = cv2.drawMatches(image1,kp1,image2,kp2,good,None)
     cv2.imwrite('image.jpg',img3)
 
+    #Store the matching keypoint coordinates for image 1 and image 2 and return 2 lists.
     image1_points = []
     image2_points = []
     for match in good:
@@ -542,4 +543,4 @@ if __name__=="__main__":
 
         #We need the best transformation matrix and the inv transformation matrix.
         stitched_img=letsStitch(image1,image2,best_transformation,inverse_tm)
-        cv2.imwrite('stitched.jpg', stitched_img)
+        cv2.imwrite(sys.argv[4], stitched_img)
