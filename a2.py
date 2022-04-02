@@ -130,8 +130,9 @@ def image_matching_and_clustering(images,arr,k):
                 f.write(line_here[j]+" ")
             f.write("\n")
 
-
-
+"""
+Function to find the matching points between two images using ORB Descriptors. 
+"""
 def orb_descriptor(image1,image2):
     #https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html
     orb_1 = cv2.ORB_create()
@@ -156,25 +157,33 @@ def orb_descriptor(image1,image2):
         image2_points.append(kp2[train_index].pt)
     return image1_points, image2_points
 
+"""
+Function to warp the image using bilinear interpolation and inverse warping.
+"""
 def warp(image_array, inverse_tm):
+    #Reffered the video https://youtu.be/UhGEtSdBwIQ for bilinear interpolation
     dest_image = np.zeros(image_array.shape)
+    #iterate over all pixels of the image
     for col in range(len(image_array[0])):
         for row in range(len(image_array)):
             source_pixels = np.dot(inverse_tm, [col, row, 1])
+            # find the location in the original image where the new pixels values map.
             if (source_pixels[0] > 0 and source_pixels[1] > 0 and source_pixels[2] > 0) or (
                     source_pixels[0] < 0 and source_pixels[1] < 0 and source_pixels[2] < 0):
                 source_x = source_pixels[1] / source_pixels[2]
                 source_y = source_pixels[0] / source_pixels[2]
-
+                # find the distances from the neighbouring 4 locations.
                 x_ = int(np.floor(source_x))
                 y_ = int(np.floor(source_y))
                 # print(x_,y_)
                 a = source_x - x_
                 b = source_y - y_
 
+                #using the below loop to find all the R G B values.
                 rgb = [0, 0, 0]
                 for i in range(3):
                     # print(i)
+                    # perform bilinear interpolation
                     if x_ + 1 < len(image_array) and y_ + 1 < len(image_array[0]):
                         value = (1 - a) * (1 - b) * image_array[x_][y_][i] + (1 - a) * (b) * image_array[x_][y_ + 1][
                             i] + (a) * (1 - b) * image_array[x_ + 1][y_][i] + (a) * (b) * image_array[x_ + 1][y_ + 1][i]
@@ -185,13 +194,18 @@ def warp(image_array, inverse_tm):
     dest_image = dest_image.astype(np.uint8)
     return dest_image
 
-def transform(n,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4):
-    # n = 1
+"""
+Function to find the transformation matrix between a source and destination image.
+"""
+def transform(n, dest_img_p1, dest_img_p2, dest_img_p3, dest_img_p4, src_img_p1, src_img_p2, src_img_p3, src_img_p4):
+
     if n==1:
-        matrix = np.array([[1, 0, abs(img1_p1[0] - img2_p1[0])], [0, 1, abs(img1_p1[1] - img2_p1[1])], [0, 0, 1]])
-        print("Transformation matrix\n",matrix)
+        # n = 1 --- Translation
+        matrix = np.array([[1, 0, abs(dest_img_p1[0] - src_img_p1[0])], [0, 1, abs(dest_img_p1[1] - src_img_p1[1])], [0, 0, 1]])
         return matrix
+
     if n == 2:
+        #n=2 --- Euclidean
         # j = [img2_p1, img2_p2]
         # k = np.array(img1_p1)
         # # print(j)
@@ -202,14 +216,14 @@ def transform(n,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4
         # k = np.array(img1_p2)
         # res2 = np.linalg.solve(j, k)
         matrix = np.array([
-            [img2_p1[0], -img2_p1[1], 1, 0],
-            [img2_p1[1], img2_p1[0], 0, 1],
-            [img2_p2[0], -img2_p2[1], 1, 0],
-            [img2_p2[1], img2_p2[0], 0, 1]
+            [src_img_p1[0], -src_img_p1[1], 1, 0],
+            [src_img_p1[1], src_img_p1[0], 0, 1],
+            [src_img_p2[0], -src_img_p2[1], 1, 0],
+            [src_img_p2[1], src_img_p2[0], 0, 1]
         ])
 
         mat_b = np.array(
-            [[img1_p1[0]], [img1_p1[1]], [img1_p2[0]], [img1_p2[1]]])
+            [[dest_img_p1[0]], [dest_img_p1[1]], [dest_img_p2[0]], [dest_img_p2[1]]])
         x = np.linalg.solve(matrix, mat_b)
         print("x",x)
         # x = np.append(x, [0, 0, 1])
@@ -218,52 +232,50 @@ def transform(n,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4
             [x[1],x[0],x[3]],
             [0,0,1]
         ],dtype=float)
-        print("Transformation matrix\n",matrix)
 
         return matrix
 
     if n == 3:
-
+        #n=3 --- Affine
         matrix = np.array([
-            [img2_p1[0], img2_p1[1], 1, 0, 0, 0],
-            [0, 0, 0, img2_p1[0], img2_p1[1], 1],
-            [img2_p2[0], img2_p2[1], 1, 0, 0, 0],
-            [0, 0, 0, img2_p2[0], img2_p2[1], 1],
-            [img2_p3[0], img2_p3[1], 1, 0, 0, 0],
-            [0, 0, 0, img2_p3[0], img2_p3[1], 1]])
+            [src_img_p1[0], src_img_p1[1], 1, 0, 0, 0],
+            [0, 0, 0, src_img_p1[0], src_img_p1[1], 1],
+            [src_img_p2[0], src_img_p2[1], 1, 0, 0, 0],
+            [0, 0, 0, src_img_p2[0], src_img_p2[1], 1],
+            [src_img_p3[0], src_img_p3[1], 1, 0, 0, 0],
+            [0, 0, 0, src_img_p3[0], src_img_p3[1], 1]])
 
         mat_b = np.array(
-            [[img1_p1[0]], [img1_p1[1]], [img1_p2[0]], [img1_p2[1]], [img1_p3[0]], [img1_p3[1]]])
+            [[dest_img_p1[0]], [dest_img_p1[1]], [dest_img_p2[0]], [dest_img_p2[1]], [dest_img_p3[0]], [dest_img_p3[1]]])
         x = np.linalg.solve(matrix, mat_b)
         x = np.append(x, [0,0,1])
         # print(x)
         # print(x.reshape((3, 3)))
         matrix = x.reshape((3, 3))
         # matrix = np.array([res1, res2, [0, 0, 1]])
-        print("Transformation matrix\n",matrix)
 
         return matrix
 
     if n == 4:
+        #n=4 --- Projective
         matrix = np.array([
-            [img2_p1[0], img2_p1[1], 1, 0, 0, 0, -img1_p1[0] * img2_p1[0], -img1_p1[0] * img2_p1[1]],
-            [0, 0, 0, img2_p1[0], img2_p1[1], 1, -img1_p1[1] * img2_p1[0], -img1_p1[1] * img2_p1[1]],
-            [img2_p2[0], img2_p2[1], 1, 0, 0, 0, -img1_p2[0] * img2_p2[0], -img1_p2[0] * img2_p2[1]],
-            [0, 0, 0, img2_p2[0], img2_p2[1], 1, -img1_p2[1] * img2_p2[0], -img1_p2[1] * img2_p2[1]],
-            [img2_p3[0], img2_p3[1], 1, 0, 0, 0, -img1_p3[0] * img2_p3[0], -img1_p3[0] * img2_p3[1]],
-            [0, 0, 0, img2_p3[0], img2_p3[1], 1, -img1_p3[1] * img2_p3[0], -img1_p3[1] * img2_p3[1]],
-            [img2_p4[0], img2_p4[1], 1, 0, 0, 0, -img1_p4[0] * img2_p4[0], -img1_p4[0] * img2_p4[1]],
-            [0, 0, 0, img2_p4[0], img2_p4[1], 1, -img1_p4[1] * img2_p4[0], -img1_p4[1] * img2_p4[1]]])
+            [src_img_p1[0], src_img_p1[1], 1, 0, 0, 0, -dest_img_p1[0] * src_img_p1[0], -dest_img_p1[0] * src_img_p1[1]],
+            [0, 0, 0, src_img_p1[0], src_img_p1[1], 1, -dest_img_p1[1] * src_img_p1[0], -dest_img_p1[1] * src_img_p1[1]],
+            [src_img_p2[0], src_img_p2[1], 1, 0, 0, 0, -dest_img_p2[0] * src_img_p2[0], -dest_img_p2[0] * src_img_p2[1]],
+            [0, 0, 0, src_img_p2[0], src_img_p2[1], 1, -dest_img_p2[1] * src_img_p2[0], -dest_img_p2[1] * src_img_p2[1]],
+            [src_img_p3[0], src_img_p3[1], 1, 0, 0, 0, -dest_img_p3[0] * src_img_p3[0], -dest_img_p3[0] * src_img_p3[1]],
+            [0, 0, 0, src_img_p3[0], src_img_p3[1], 1, -dest_img_p3[1] * src_img_p3[0], -dest_img_p3[1] * src_img_p3[1]],
+            [src_img_p4[0], src_img_p4[1], 1, 0, 0, 0, -dest_img_p4[0] * src_img_p4[0], -dest_img_p4[0] * src_img_p4[1]],
+            [0, 0, 0, src_img_p4[0], src_img_p4[1], 1, -dest_img_p4[1] * src_img_p4[0], -dest_img_p4[1] * src_img_p4[1]]])
 
         mat_b = np.array(
-            [[img1_p1[0]], [img1_p1[1]], [img1_p2[0]], [img1_p2[1]], [img1_p3[0]], [img1_p3[1]], [img1_p4[0]],
-             [img1_p4[1]]])
+            [[dest_img_p1[0]], [dest_img_p1[1]], [dest_img_p2[0]], [dest_img_p2[1]], [dest_img_p3[0]], [dest_img_p3[1]], [dest_img_p4[0]],
+             [dest_img_p4[1]]])
 
         x = np.linalg.solve(matrix, mat_b)
         x = np.append(x, [1])
         # print(x.reshape((3, 3)))
         matrix = x.reshape((3, 3))
-        print("Transformation matrix\n",matrix)
 
         return matrix
 
@@ -357,35 +369,42 @@ if __name__=="__main__":
 
 
     if part_number == "part2":
+
+        # below are the commmands used for some tests.
+        # python a2.py part2 4 scene2.jpg scene1.jpg scene_output_projective2.jpg 476,243 220,328 449,246 192,332 700,73 442,158 671,363 414,449
+        # python a2.py part2 4 scene1.jpg scene2.jpg scene_output_projective3.jpg 220,328 476,243 192,332 449,246 442,158 700,73 414,449 671,363
         #part2 4 part2-images\book2.jpg part2-images\book1.jpg try.jpg 141,131 318,256 480,159 534,372 493,630 316,670 64,601 73,473
+
         print("Starting Part 2:")
         n = int(sys.argv[2])
-        image_name2 = sys.argv[3]
-        image_name1 = sys.argv[4]
+        src = sys.argv[3]
+        dest = sys.argv[4]
 
-        image1 = Image.open(image_name1)
-        image1 = np.asarray(image1)
+        dest_image = Image.open(dest)
+        dest_image = np.asarray(dest_image)
 
-        image2 = Image.open(image_name2)
-        image2 = np.asarray(image2)
+        src_image = Image.open(src)
+        src_image = np.asarray(src_image)
 
         output_image = sys.argv[5]
-        img2_p1 = np.array([ int(i) for i in sys.argv[6].split(",")])
-        img1_p1 = np.array([ int(i) for i in sys.argv[7].split(",")])
+        src_img_p1 = np.array([ int(i) for i in sys.argv[6].split(",")])
+        dest_img_p1 = np.array([int(i) for i in sys.argv[7].split(",")])
 
-        img2_p2 = np.array([ int(i) for i in sys.argv[8].split(",")])
-        img1_p2 = np.array([ int(i) for i in sys.argv[9].split(",")])
+        src_img_p2 = np.array([int(i) for i in sys.argv[8].split(",")])
+        dest_img_p2 = np.array([ int(i) for i in sys.argv[9].split(",")])
 
-        img2_p3 = np.array([ int(i) for i in sys.argv[10].split(",")])
-        img1_p3 = np.array([ int(i) for i in sys.argv[11].split(",")])
+        src_img_p3 = np.array([ int(i) for i in sys.argv[10].split(",")])
+        dest_img_p3 = np.array([ int(i) for i in sys.argv[11].split(",")])
 
-        img2_p4 = np.array([ int(i) for i in sys.argv[12].split(",")])
-        img1_p4 = np.array([ int(i) for i in sys.argv[13].split(",")])
+        src_img_p4 = np.array([ int(i) for i in sys.argv[12].split(",")])
+        dest_img_p4 = np.array([ int(i) for i in sys.argv[13].split(",")])
 
-        matrix = transform(n,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4)
+        matrix = transform(n, dest_img_p1, dest_img_p2, dest_img_p3, dest_img_p4, src_img_p1, src_img_p2, src_img_p3, src_img_p4)
+        #printing the transformation matrix obtained.
+        print("Transformation matrix\n",matrix)
 
         inverse_tm = inv(matrix)
-        transformed_image = Image.fromarray(warp(image2, inverse_tm))
+        transformed_image = Image.fromarray(warp(src_image, inverse_tm))
         transformed_image.save(output_image)
 
 
@@ -412,31 +431,30 @@ if __name__=="__main__":
         best_transformation = None
         for i in range(10000):
             inliers = 0
-            sample_indices = list(np.random.randint(0,len(points_image1),s))
-            #print(sample_indices)
-            #print(points_image1[sample_indices[0]])
-            img1_p1,img1_p2,img1_p3,img1_p4 = [points_image1[i] for i in sample_indices]
-            img2_p1,img2_p2,img2_p3 ,img2_p4 = [points_image2[i] for i in sample_indices]
+            sample_indices = list(np.random.randint(0, len(points_image1), s))
+            # print(sample_indices)
+            # print(points_image1[sample_indices[0]])
+            img1_p1, img1_p2, img1_p3, img1_p4 = [points_image1[i] for i in sample_indices]
+            img2_p1, img2_p2, img2_p3, img2_p4 = [points_image2[i] for i in sample_indices]
 
             try:
-            #find the projective trasformation
-                matrix = transform(4,img1_p1,img1_p2,img1_p3,img1_p4,img2_p1,img2_p2,img2_p3 ,img2_p4)
-            #print(matrix)
+                # find the projective trasformation
+                matrix = transform(4, img2_p1, img2_p2, img2_p3, img2_p4, img1_p1, img1_p2, img1_p3, img1_p4)
             except:
                 print("singular matrix. \n------ skipping-------\n")
                 continue
 
-            #finding the number of inliers for the above projective transformation
+            # finding the number of inliers for the above projective transformation
             for i in range(len(points_image1)):
-                pt1  = np.array([points_image2[i][1],points_image2[i][0],1])
-                pt_ = np.dot(matrix,pt1)
-                pt_ = pt_/pt_[2]
+                pt1 = np.array([points_image1[i][0], points_image1[i][1], 1])
+                pt_ = np.dot(matrix, pt1)
+                pt_ = pt_ / pt_[2]
+                # print(pt_)
 
-                pt2 = np.array([points_image1[i][1],points_image1[i][0],1])
-                #print("pt_",pt_)
-                #print("pt2",pt2)
-                #find euclidean distance between the transformed point and the actual point from the descriptor
-                if np.sqrt(np.sum((pt_-pt2)**2)) < 0.7:
+                pt2 = np.array([points_image2[i][0], points_image2[i][1], 1])
+                # find euclidean distance between the transformed point and the actual point from the descriptor
+                # print("dist",np.sqrt(np.sum(np.square(pt_-pt2))))
+                if np.sqrt(np.sum(np.square(pt_ - pt2))) < 0.75:
                     inliers += 1
             print(inliers)
             if inliers > max_inliers:

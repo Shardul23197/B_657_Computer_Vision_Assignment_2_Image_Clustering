@@ -178,4 +178,44 @@ python a2.py part2 4 src.jpg dest.jpg bhutan.jpg 167,801 617,1133 723,1693 1057,
 
 # Part 3: Automatic image matching and transformations
 
+## Problem Description: 
+This part consists of 4 parts:
+1) Extract interest points from each image
+2) Figure the relative transformation between the images by implementing RANSAC
+3) Transform the images into a common coordinate system
+4) Blend the images together
+
+## Step 1: Extract interest points from each image
+This step uses the ORB detector. ORB is basically a fusion of FAST keypoint detector and BRIEF descriptor with many modifications to enhance the performance. According to 'ORB: An efficient alternative to SIFT or SURF', a paper written by Ethan Rublee, Vincent Rabaud, Kurt Konolige, Gary Bradski (https://ieeexplore.ieee.org/document/6126544), ORB works better and faster than SIFT and that is why we chose to use the ORB descriptor in our approach. 
+Our ORB function gives us the matching points in the 2 images. An example of this matching is given below.
+![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+
+### Step 2: Figure the relative transformation between the images by implementing RANSAC
+Random sample consensus (RANSAC) is an iterative method to estimate parameters of a mathematical model from a set of observed data that contains outliers, when outliers are to be accorded no influence on the values of the estimates. Therefore, it also can be interpreted as an outlier detection method.
+An advantage of RANSAC is its ability to do robust estimation[3] of the model parameters, i.e., it can estimate the parameters with a high degree of accuracy even when a significant number of outliers are present in the data set. A disadvantage of RANSAC is that there is no upper bound on the time it takes to compute these parameters (except exhaustion).
+### Algorithm RANSAC: 
+1) Select randomly the minimum number of points required to determine the model parameters.
+2) Solve for the parameters of the model.
+3) Determine how many points from the set of all points fit with a predefined tolerance.
+4) If the fraction of the number of inliers over the total number points in the set exceeds a predefined threshold t, re-estimate the model parameters using all the identified inliers and terminate.
+5) Otherwise, repeat steps 1 through 4 (maximum of N times).
+
+All of the above steps return us a relative transformation matrix which will be useful in the next step.
+
+## Step 3: Transform the images into a common coordinate system
+Using the transformation matrix given by RANSAC, we can now bring the both the images in the same coordinate plane. This step is crucial as the transformation will help us sticth both the images together and if they are in different coordinate planes, common image pixels will never overlap. 
+An example of this procedure is given below.
+### Source Image
+![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+
+### Destination Image
+![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+
+### Transformed Source Image in the Destination coordinate plane
+![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+
+## Step 4: Blend the images together
+This step involves blending the destination imagage with the Transformed Source Image. 
+Some successfull blends are shown below
+
 ## Limitations
