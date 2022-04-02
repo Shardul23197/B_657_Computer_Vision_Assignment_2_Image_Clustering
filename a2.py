@@ -287,72 +287,113 @@ def transform(n, dest_img_p1, dest_img_p2, dest_img_p3, dest_img_p4, src_img_p1,
 
         return matrix
 
-def letsStitch(image1,image2,bestTransMat,invTransMat):
+def letsStitch(image1, image2, bestTransMat, invTransMat):
+    #Given below is an honest attempt of writing our own homegrown version of the cv2.getRectSubPix method
+    #Unfortunately it did no work out due to some unknown reasons and hence we decided to go ahead with the cv2.getRectSubPix method
+    """
+    x_ = int(pt_[1])
+    y_ = int(pt_[0])
+    # print(x_,y_)
+    a = pt_[1] - x_
+    b = pt_[0] - y_
+
+    rgb = [0, 0, 0]
+    for i in range(3):
+        # print(i)
+        if x_ + 1 < len(image2) and y_ + 1 < len(image2[0]):
+            value = (1 - a) * (1 - b) * image2[x_][y_][i] + (1 - a) * (b) * image2[x_][y_ + 1][i] + (a) * (1 - b) * image2[x_ + 1][y_][i] + (a) * (b) * image2[x_ + 1][y_ + 1][i]
+            rgb[i] = int(value)
+    # print(rgb)
+    if stitched_image[y,x,0] != 0:
+        print((rgb + stitched_image[y + offset_y, x + offset_x,:])/2)
+        stitched_image_[y + offset_y, x + offset_x,:] = (rgb + stitched_image[y + offset_y, x + offset_x,:])/2
+    else:
+        stitched_image_[y + offset_y, x + offset_x,:] = rgb
+    """
+    """
+    We were having some problems while stitching the images so we have refrenced the following code from
+    https://github.com/melanie-t/ransac-panorama-stitch/blob/master/src/PanoramaStitching.py
+    """
+    #############################
+    #Referenced code starts here#
+    #############################
     image2_h, image2_w, image2_ch = image2.shape
     print(image2_h, image2_w, image2_ch)
 
+    #Finding corners of images after bringing them in the same coordinate system.
+
     # Top-Left Corner
-    pt1  = np.array([0,0,1])
-    pt1_ = np.dot(invTransMat,pt1)
-    pt1_ = pt1_/pt1_[2]
-    
+    pt1 = np.array([0, 0, 1])
+    pt1_ = np.dot(invTransMat, pt1)
+    pt1_ = pt1_ / pt1_[2]
+
     # Top-Right Corner
-    pt2  = np.array([0,image2_h-1,1])
-    pt2_ = np.dot(invTransMat,pt2)
-    pt2_ = pt2_/pt2_[2]
-    
+    pt2 = np.array([0, image2_h - 1, 1])
+    pt2_ = np.dot(invTransMat, pt2)
+    pt2_ = pt2_ / pt2_[2]
+
     # Bottom-Left Corner
-    pt3  = np.array([image2_w-1,0,1])
-    pt3_ = np.dot(invTransMat,pt3)
-    pt3_ = pt3_/pt3_[2]
+    pt3 = np.array([image2_w - 1, 0, 1])
+    pt3_ = np.dot(invTransMat, pt3)
+    pt3_ = pt3_ / pt3_[2]
 
     # Bottom-Right Corner
-    pt4  = np.array([image2_w-1,image2_h-1,1])
-    pt4_ = np.dot(invTransMat,pt4)
-    pt4_ = pt4_/pt4_[2]
+    pt4 = np.array([image2_w - 1, image2_h - 1, 1])
+    pt4_ = np.dot(invTransMat, pt4)
+    pt4_ = pt4_ / pt4_[2]
 
-    # Calculate new width
-    # To determine the new size of the stitched image, we have to add the values from
-    # image2 corners that fall outside of image1's width and height.
+    
+    #Add the values from image2's corners that are outside of image1's width and height to get the new size of the stitched image.
     image1_h, image1_w, image1_ch = image1.shape
 
-    # Added 0 when finding the minimum values, because if image2 corners fall within image1's size, then padding is 0
-    min_x = np.round(min(0, pt1_[0], pt2_[0], pt3_[0], pt4_[0])).astype(int)    # The offset for x when adding stitched values of image2
-    min_y = np.round(min(0, pt1_[1], pt2_[1], pt3_[1], pt4_[1])).astype(int)    # The offset for y when adding stitched values of image2
-    offset_x = np.abs(min_x)   # This is the padding added to the right of image1's width (offset of x)
-    offset_y = np.abs(min_y)   # This is the padding added to the top of image1's height (offset of y)
+    # When finding the minimum values, we added 0 since padding is 0 if the corners of image2 are inside the size of image1.
+    Xmin = np.round(min(0, pt1_[0], pt2_[0], pt3_[0], pt4_[0])).astype(int)  # The offset for x
+    Ymin = np.round(min(0, pt1_[1], pt2_[1], pt3_[1], pt4_[1])).astype(int)  # The offset for y
+    offset_x = np.abs(Xmin)  # Padding added to the right of image1's width (offset of x)
+    offset_y = np.abs(Ymin)  # Padding added to the top of image1's height (offset of y)
 
-    # I added image1's height and width when finding the maximum value of image2's projected corners
-    # so the padding will be 0 if image2's corners fall within image1's height and width
-    max_x = np.round(max(image1_w, pt1_[0], pt2_[0], pt3_[0], pt4_[0])).astype(int)
-    max_y = np.round(max(image1_h, pt1_[1], pt2_[1], pt3_[1], pt4_[1])).astype(int)
+    # We incorporated image1's height and width when establishing the maximum value of image2's projected corners, 
+    # thus the padding will be 0 if image2's corners fall inside image1's height and breadth.
+    Xmax = np.round(max(image1_w, pt1_[0], pt2_[0], pt3_[0], pt4_[0])).astype(int)
+    Ymax = np.round(max(image1_h, pt1_[1], pt2_[1], pt3_[1], pt4_[1])).astype(int)
 
-    # To find the padding values for the left and bottom of image1, we only want to find the offset to pad it with, so we
-    # subtract the maximum x and y values found from projecting image2's corners with image1's height and width respectively
-    new_width = offset_x + image1_w + np.abs(image1_w-max_x)
-    new_height = offset_y + image1_h + np.abs(image1_h-max_y)
+    # We only need the offset to pad image1, so we ignore the maximum x and y values produced by projecting image2's corners with image1's height and width.
+    new_width = offset_x + image1_w + np.abs(image1_w - Xmax)
+    new_height = offset_y + image1_h + np.abs(image1_h - Ymax)
 
+    #Creating a canvas for our images 
     stitched_image = np.zeros((new_height, new_width, 3))
 
+    #Putting image1 onto the canvas
     for y in range(image1_h):
         for x in range(image1_w):
-            # The offset for x is the min_x value we calculated earlier, and likewise for y
-            stitched_image[y+offset_y, x+offset_x] = image1[y, x]
-    
+            stitched_image[y + offset_y, x + offset_x] = image1[y, x]
+
+    #Getting shape of the new canvas
     stitched_image_h, stitched_image_w, c = stitched_image.shape
 
-    print("\tTransferring pixels from the second image to the stitched image")
-    for y in range(min_y, stitched_image_h):
-        for x in range(min_x, stitched_image_w):
-            if y+offset_y < stitched_image_h and x+offset_x < stitched_image_w:
-                pt  = np.array([x,y,1])
-                pt_ = np.dot(bestTransMat,pt)
-                pt_ = pt_/pt_[2]
+    #print("\tTransferring pixels from the second image to the stitched image")
+    for y in range(Ymin, stitched_image_h): 
+        for x in range(Xmin, stitched_image_w):
+            if y + offset_y < stitched_image_h and x + offset_x < stitched_image_w:
+
+                # using a transformation to align the 2 images
+
+                pt = np.array([x, y, 1])
+                pt_ = np.dot(bestTransMat, pt)
+                pt_ = pt_ / pt_[2]
+
+                # cv2.getRectSubPix works like a bilinear interpolation method
+
                 if 0 < pt_[0] < image2_w and 0 < pt_[1] < image2_h:
                     pixel = cv2.getRectSubPix(image2, (1, 1), (pt_[0], pt_[1]))
-                    stitched_image[y+offset_y, x+offset_x] = pixel
-    
+                    stitched_image[y + offset_y, x + offset_x] = pixel 
+
     return stitched_image
+
+    ###########################
+    #Referenced code ends here#
+    ###########################
 
 
 
@@ -417,6 +458,20 @@ if __name__=="__main__":
 
 
     if part_number == "part3":
+        """
+        
+        Commands for different images pairs
+
+        1. python a2.py part3 part3-test/scene1.jpg part3-test/scene2.jpg op.jpg
+        2. python a2.py part3 part3-test/building2.jpg part3-test/building1.jpg op.jpg
+        3. python a2.py part3 part3-test/parking1.jpg part3-test/parking2.jpg op.jpg
+        4. python a2.py part3 part3-test/coffee2.jpg part3-test/coffee1.jpg op.jpg
+        5. python a2.py part3 part3-test/chips_ahoy2.jpg part3-test/chips_ahoy1.jpg op.jpg
+        6. python a2.py part3 part3-test/house1.jpg part3-test/house2.jpg op.jpg
+        7. python a2.py part3 part3-test/lap1.jpg part3-test/lap2.jpg op.jpg
+        
+        
+        """
         print("Starting Part 3:")
 
         # part3 scene1.jpg scene2.jpg
@@ -428,8 +483,8 @@ if __name__=="__main__":
 
         image2 = Image.open(image_name2)
         image2 = np.asarray(image2)
+        
         # call the orb descriptor function to get the orb descriptors and point correspodences.
-
         points_image1, points_image2 = orb_descriptor(image1,image2)
         #print("final_points",points_image1,points_image2)
         print("length of final_points",len(points_image2))
@@ -475,7 +530,7 @@ if __name__=="__main__":
 
         inverse_tm = inv(matrix)
         transformed_image = Image.fromarray(warp(image1, inverse_tm))
-        transformed_image.save("lets-see.jpg")
+        #transformed_image.save("lets-see.jpg")
 
         #We need the best transformation matrix and the inv transformation matrix.
         stitched_img=letsStitch(image1,image2,best_transformation,inverse_tm)
