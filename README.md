@@ -2,7 +2,7 @@
 
 
 ## Problem Definition
-In this problem, we had to find matches between the pairs of images given and use a clustering algorithm to cluster the images that have the most matches among themselves. 
+In this problem, we had to find matches between the pairs of images given and use a clustering algorithm to cluster the images that have the most matches among themselves and to find the accuracy of the clustering algorithm. 
 
 ## Function Definition
 For this part, we have written a function:image_matching_and_clustering() which takes 3 arguments: 
@@ -16,25 +16,25 @@ There are 2 parts to this function: image matching and clustering.
 
 ## Image Matching
 Image matching is a technique where we try and find similar "features" of 2 images and match them.
-There can be multiple images of the same object taken but they might have different orientations, different lighting and even different scale. But they are ultimately, the images of the same object and should be categorized as such.
+There can be multiple images of the same object taken but they might have different orientations, different lighting, and even different scale.  Ultimately, they are the images of the same object and should be categorized as such.
 
-1. Initially, we created a matrix of dimensions number of images by number of images. This matrix will store the number of matches for each pair of images. 
+1. Initially, we created a matrix of dimensions number of images by the number of images. This matrix will store the number of matches for each pair of images. 
    
-2. We then used https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html as reference to do Brute-Force Matching with ORB descriptors. We used the bf.knnMatch function to find the closest k matches or keypoints, in this case, we set k=2, so that we can use the Lowe ratio test to use only the good matches. (https://link.springer.com/article/10.1023/B:VISI.0000029664.99615.94).
+2. We then used https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html as a reference to do Brute-Force Matching with ORB descriptors. We create the orb object for both images to detect the key points and descriptors of each image. Then we will use the BFMatcher function with Hamming Distance as the distance metric to find the matches between the 2 images. We used the bf.knnMatch function to find the closest k matches or keypoints, in this case, we set k=2, so that we can use the Lowe ratio test to use only the good matches. (https://link.springer.com/article/10.1023/B:VISI.0000029664.99615.94).
 
-According to the Lowe test, if the ratio of the distance of the closest and second closest match is below a certain threshold, we can consider that to be a good match, otherwise, we eliminate those keypoints.
+According to the Lowe test, if the ratio of the distance between the closest and second closest match is below a certain threshold, we can consider that to be a good match, otherwise, we eliminate those key points.
 
 ## Image Clustering
 
-1. After finding the good keypoint matches for each pair of images, we performed clustering on the matrix obtained. We used the AgglomerativeClustering library function to perform this operation. (https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AgglomerativeClustering.html). We tried various affinity parameter values and linkages, and cosine affinity and complete linkage Agglomerative clustering gave us the best results. We obtain the image and the cluster number it belongs to in the result for each image. 
+1. After finding the good key point matches for each pair of images, we performed clustering on the matrix obtained. We used the AgglomerativeClustering library function to perform this operation. (https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AgglomerativeClustering.html). We tried various affinity parameter values and linkages, and cosine affinity and complete linkage Agglomerative clustering gave us the best results. We obtain the image and the cluster number it belongs to in the result for each image. 
    
-2. Once we obtain the results of the clustering, we checked the Pairwise Clustering Accuracy. To do this, we stored the results of clustering in 2 dictionaries. The first dictionary contained the cluster number as the key and the images that belonged to those clusters as the list of values for that key, and the second dictionary contained the image name as the key and corresponding cluster as the value. 
+2. Once we obtain the results of the clustering, we checked the Pairwise Clustering Accuracy. To do this, we stored the results of clustering in 2 dictionaries. The first dictionary contained the cluster number as the key and the images that belonged to those clusters as the list of values for that key, and the second dictionary contained the image name as the key and the corresponding cluster as the value. 
    
-3. To check the Pairwise Clustering Accuracy, we checked if the images of the same monument or object are in the same cluster or not. To do this, we took each pair of images and checked if they are of the same monument. If the images are of the same monument and belong in the same cluster, then that's a true positive case. If the images are of different monument and belong in different clusters, then that's a true negative case. We carried out the calculation by adding the true positive and true negative cases and divided it by the total number of possible pairs. We then printed this accuracy. 
+3. To check the Pairwise Clustering Accuracy, we checked if the images of the same monument or object are in the same cluster or not. To do this, we took each pair of images and checked if they are of the same monument. If the images are of the same monument and belong in the same cluster, then that's a true positive case. If the images are of a different monument and belong in different clusters, then that's a true negative case. We carried out the calculation by adding the true positive and true negative cases and dividing them by the total number of possible pairs. We then printed this accuracy. 
    
 4. To store the clusters in a text file, we just used the first dictionary which had the cluster numbers and images corresponding to that cluster. We wrote each cluster into the file line by line. 
 
-## Sample Case
+## Sample Cases
 
 For all the images in the given dataset, if we set the number of clusters to 18, we get the following result.
 
@@ -75,7 +75,7 @@ the accuracy came out to be only 47.61%. There were 0 true positives and 20 true
 
 ![Failure Case 1](./part1-special-cases/failure_case_1.png)
 
-As you can see that, despite the bigben_8.jpg, bigben_7.jpg and bigben_2.jpg being images of the same monument, they are in different clusters. This failure may occur because of the python Agglomerative Clustering function being used with different parameters. It may also be possible that the images, despite being of the same monument, might not have many matching points as expected due to the their different orientations, lighting and angles. 
+As you can see, despite the bigben_8.jpg, bigben_7.jpg, and bigben_2.jpg being images of the same monument, they are in different clusters. This failure may occur because of the python Agglomerative Clustering function being used with different parameters. It may also be possible that the images, despite being of the same monument, might not have many matching points as expected due to their different orientations, lighting, and angles. 
 
 Here are some other cases where the accuracy is much lower than expected and the clusters formed are different from what is expected. 
 
@@ -97,7 +97,7 @@ Here are some other cases where the accuracy is much lower than expected and the
 
 ![Failure Case 4](./part1-special-cases/failure_case_4.png)
 
-
+In all these cases, the images that should belong in the same cluster are not actually in the same cluster. It may be possible that the key points that were matched using Agglomerative Clustering might not have been the right ones or the images might have different angles or orientations, making it difficult to match the features. 
 
 
 # Part 2: Image transformations

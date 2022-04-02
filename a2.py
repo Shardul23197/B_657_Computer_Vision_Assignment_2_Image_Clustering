@@ -1,14 +1,10 @@
 import numpy as np
-from PIL import Image, ImageOps
+from PIL import Image
 from numpy.linalg import inv
 import sys
-import matplotlib.pyplot as plt
 from copy import deepcopy as deepcopy
 import cv2
 from sklearn.cluster import AgglomerativeClustering
-from scipy.cluster.hierarchy import dendrogram
-import os
-import glob
 
 #Code for ORB matches from:https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html
 #From Brute-Force Matching with SIFT Descriptors and Ratio Test(using ORB instead of SIFT in this case)
@@ -36,6 +32,9 @@ def image_matching_and_clustering(images,arr,k):
                 #apply thresholding to get better matches
                 #if the closest distance is much smaller than the second closest distance,
                 #then that's a good match
+
+                #logic for this used from Lowe's ratio test
+                #link to paper https://link.springer.com/article/10.1023/B:VISI.0000029664.99615.94
                 if first_closest.distance/second_closest.distance < 0.70 :
                     good.append(first_closest)
             number_of_matches_matrix[i][j] = len(good)
@@ -135,14 +134,23 @@ Function to find the matching points between two images using ORB Descriptors.
 """
 def orb_descriptor(image1,image2):
     #https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html
+    #Code for ORB matches from:https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html
+    #From Brute-Force Matching with SIFT Descriptors and Ratio Test(using ORB instead of SIFT in this case)
+
     orb_1 = cv2.ORB_create()
+
+    #Detect the keypoints required in both images
     kp1, des1 = orb_1.detectAndCompute(image1,None)
     kp2, des2 = orb_1.detectAndCompute(image2,None)
     bf = cv2.BFMatcher(cv2.NORM_HAMMING)
+
+    #Find the keypoint matches in both images. Using knnMatch with k=2 to get the 2 closest matches
     matches = bf.knnMatch(des1,des2,k=2)
     print("---------------------------------------------",len(matches))
     good = []
     for first_closest,second_closest in matches:
+        #logic for this used from Lowe's ratio test
+        #link to paper https://link.springer.com/article/10.1023/B:VISI.0000029664.99615.94
         if first_closest.distance/second_closest.distance < 0.9 :
             good.append(first_closest)
     img3 = cv2.drawMatches(image1,kp1,image2,kp2,good,None)
