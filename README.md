@@ -188,7 +188,7 @@ This part consists of 4 parts:
 ## Step 1: Extract interest points from each image
 This step uses the ORB detector. ORB is basically a fusion of FAST keypoint detector and BRIEF descriptor with many modifications to enhance the performance. According to 'ORB: An efficient alternative to SIFT or SURF', a paper written by Ethan Rublee, Vincent Rabaud, Kurt Konolige, Gary Bradski (https://ieeexplore.ieee.org/document/6126544), ORB works better and faster than SIFT and that is why we chose to use the ORB descriptor in our approach. 
 Our ORB function gives us the matching points in the 2 images. An example of this matching is given below.
-![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+![Alt text](https://github.iu.edu/cs-b657-sp2022/sdabhane-sparanjp-athakulk-a2/blob/main/report_images/image.jpg)
 
 ## Step 2: Figure the relative transformation between the images by implementing RANSAC
 Random sample consensus (RANSAC) is an iterative method to estimate parameters of a mathematical model from a set of observed data that contains outliers, when outliers are to be accorded no influence on the values of the estimates. Therefore, it also can be interpreted as an outlier detection method.
@@ -205,32 +205,26 @@ All of the above steps return us a relative transformation matrix which will be 
 ## Step 3: Transform the images into a common coordinate system
 Using the transformation matrix given by RANSAC, we can now bring the both the images in the same coordinate plane. This step is crucial as the transformation will help us sticth both the images together and if they are in different coordinate planes, common image pixels will never overlap. 
 An example of this procedure is given below.
-### Source Image
-![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
 
-### Destination Image
-![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
-
-### Transformed Source Image in the Destination coordinate plane
-![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+![Alt text](https://github.iu.edu/cs-b657-sp2022/sdabhane-sparanjp-athakulk-a2/blob/main/report_images/transformation%20image.jpg)
 
 ## Step 4: Blend the images together
 This step involves blending the destination imagage with the Transformed Source Image. 
 Some successfull blends are shown below
 
-![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+![Alt text](https://github.iu.edu/cs-b657-sp2022/sdabhane-sparanjp-athakulk-a2/blob/main/report_images/scene_stitching.jpg)
 
-![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+![Alt text](https://github.iu.edu/cs-b657-sp2022/sdabhane-sparanjp-athakulk-a2/blob/main/report_images/parking_sticth.jpg)
 
-![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+![Alt text](https://github.iu.edu/cs-b657-sp2022/sdabhane-sparanjp-athakulk-a2/blob/main/report_images/laptop_stitch.jpg)
 
-![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+![Alt text](https://github.iu.edu/cs-b657-sp2022/sdabhane-sparanjp-athakulk-a2/blob/main/report_images/vada_stitch.jpg)
 
-![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+![Alt text](https://github.iu.edu/cs-b657-sp2022/sdabhane-sparanjp-athakulk-a2/blob/main/report_images/chips_stitch.jpg)
 
 ## Limitations
 We have some failures which are shown below:
 
-![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+![Alt text](https://github.iu.edu/cs-b657-sp2022/sdabhane-sparanjp-athakulk-a2/blob/main/report_images/house_fail.png)
 
-![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
+![Alt text](https://github.iu.edu/cs-b657-sp2022/sdabhane-sparanjp-athakulk-a2/blob/main/report_images/building_fail.jpg)
