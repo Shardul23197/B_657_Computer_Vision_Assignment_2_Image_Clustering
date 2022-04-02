@@ -59,7 +59,7 @@ The output file that we obtain is:
 
 ![Successful Case with k=10](./part1-special-cases/good_case_2.png)
 
-We get a Pairwise Clustering accuracy of 78.93875642823748 for this case. 
+We get a Pairwise Clustering accuracy of 79.03225806451613 for this case. 
 
 
 ## Limitations
