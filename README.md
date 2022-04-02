@@ -46,18 +46,18 @@ We get a Pairwise Clustering accuracy of 85.36, which is the highest accuracy th
 
 The output file that we obtain is: 
 
-![Successful Case with k=18](./part1-special-cases/good_case_1.png)
+![Successful Case with k=18](./part1-special-cases/good_case.png)
 
 
-For all the images in the given dataset, if we set the number of clusters to 9, we get the following result.
+For all the images in the given dataset, if we set the number of clusters to 10, which is the number of monuments used for the dataset, we get the following result.
 
 
-![Successful Case with k=9](./part1-special-cases/good_case_code_2.png)
+![Successful Case with k=10](./part1-special-cases/good_case_code_2.png)
 
 
 The output file that we obtain is: 
 
-![Successful Case with k=9](./part1-special-cases/good_case_2.png)
+![Successful Case with k=10](./part1-special-cases/good_case_2.png)
 
 We get a Pairwise Clustering accuracy of 78.93875642823748 for this case. 
 
