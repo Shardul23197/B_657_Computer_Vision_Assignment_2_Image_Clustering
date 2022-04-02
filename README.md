@@ -235,3 +235,7 @@ The code fails in such situations because of 2 main reasons(according to us):
 2) Inability of the ORB descriptor to get enough inliers which is the primary requiremnt for our ransac algorithm.
 
 We also found some images which did the stitching right but had some duplications in the background. for example:
+
+![Alt text](https://github.iu.edu/cs-b657-sp2022/sdabhane-sparanjp-athakulk-a2/blob/main/report_images/coffee.png)
+
+Again, we think that this could be becasue of the reasons mentioned above mentioned. 
