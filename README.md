@@ -39,12 +39,27 @@ According to the Lowe test, if the ratio of the distance of the closest and seco
 For all the images in the given dataset, if we set the number of clusters to 18, we get the following result.
 
 
-![Successful Case](./part1-special-cases/good_case_code.png)
+![Successful Case with k=18](./part1-special-cases/good_case_code.png)
+
+We get a Pairwise Clustering accuracy of 85.36, which is the highest accuracy that we achieved by setting the number of clusters to twice the number of monuments used for the dataset. 
 
 
 The output file that we obtain is: 
 
-![Successful Case](./part1-special-cases/good_case_1.png)
+![Successful Case with k=18](./part1-special-cases/good_case_1.png)
+
+
+For all the images in the given dataset, if we set the number of clusters to 9, we get the following result.
+
+
+![Successful Case with k=9](./part1-special-cases/good_case_code_2.png)
+
+
+The output file that we obtain is: 
+
+![Successful Case with k=9](./part1-special-cases/good_case_2.png)
+
+We get a Pairwise Clustering accuracy of 78.93875642823748 for this case. 
 
 
 ## Limitations
@@ -53,13 +68,36 @@ The output file that we obtain is:
 ### 1. Failure Cases
 During the calculation of the clusters, for certain cases, there were failures. For example, for this case: 
 
-        python3 a2.py part1 3 part1-images/bigben_2.jpg part1-images/bigben_7.jpg part1-images/bigben_8.jpg part1-images/eiffel_18.jpg part1-images/eiffel_19.jpg part1-images/colosseum_8.jpg part1-images/colosseum_11.jpg output1.txt
+![Failure Case 1](./part1-special-cases/failure_case_code.png)
 
 the accuracy came out to be only 47.61%. There were 0 true positives and 20 true negatives. 
+
 
 ![Failure Case 1](./part1-special-cases/failure_case_1.png)
 
 As you can see that, despite the bigben_8.jpg, bigben_7.jpg and bigben_2.jpg being images of the same monument, they are in different clusters. This failure may occur because of the python Agglomerative Clustering function being used with different parameters. It may also be possible that the images, despite being of the same monument, might not have many matching points as expected due to the their different orientations, lighting and angles. 
+
+Here are some other cases where the accuracy is much lower than expected and the clusters formed are different from what is expected. 
+
+
+![Failure Case 2](./part1-special-cases/failure_case_code_2.png)
+
+
+![Failure Case 2](./part1-special-cases/failure_case_2.png)
+
+
+![Failure Case 3](./part1-special-cases/failure_case_code_3.png)
+
+
+![Failure Case 3](./part1-special-cases/failure_case_3.png)
+
+
+![Failure Case 4](./part1-special-cases/failure_case_code_4.png)
+
+
+![Failure Case 4](./part1-special-cases/failure_case_4.png)
+
+
 
 
 # Part 2: Image transformations
