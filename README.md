@@ -188,6 +188,7 @@ This part consists of 4 parts:
 ## Step 1: Extract interest points from each image
 This step uses the ORB detector. ORB is basically a fusion of FAST keypoint detector and BRIEF descriptor with many modifications to enhance the performance. According to 'ORB: An efficient alternative to SIFT or SURF', a paper written by Ethan Rublee, Vincent Rabaud, Kurt Konolige, Gary Bradski (https://ieeexplore.ieee.org/document/6126544), ORB works better and faster than SIFT and that is why we chose to use the ORB descriptor in our approach. 
 Our ORB function gives us the matching points in the 2 images. An example of this matching is given below.
+
 ![Alt text](https://github.iu.edu/cs-b657-sp2022/sdabhane-sparanjp-athakulk-a2/blob/main/report_images/image.jpg)
 
 ## Step 2: Figure the relative transformation between the images by implementing RANSAC
@@ -228,3 +229,9 @@ We have some failures which are shown below:
 ![Alt text](https://github.iu.edu/cs-b657-sp2022/sdabhane-sparanjp-athakulk-a2/blob/main/report_images/house_fail.png)
 
 ![Alt text](https://github.iu.edu/cs-b657-sp2022/sdabhane-sparanjp-athakulk-a2/blob/main/report_images/building_fail.jpg)
+
+The code fails in such situations because of 2 main reasons(according to us):
+1) The RANSAC algorithm doesn't pick the optimal transformation matrix, as we randomly pick the starting points, which can be used for stitching.
+2) Inability of the ORB descriptor to get enough inliers which is the primary requiremnt for our ransac algorithm.
+
+We also found some images which did the stitching right but had some duplications in the background. for example:
