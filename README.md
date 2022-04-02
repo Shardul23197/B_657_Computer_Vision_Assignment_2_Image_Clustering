@@ -175,6 +175,9 @@ python a2.py part2 4 src.jpg dest.jpg bhutan.jpg 167,801 617,1133 723,1693 1057,
 ![Alt text](https://media.github.iu.edu/user/18152/files/cb85d8e9-6060-4452-8901-d6d2b07aead4)
 
 
+## Challenges: <br>
+Struggled to figure out how to calculate matrix for n=2, n=3 and n=4.<br>
+Had to manually solve and find linear equation system for n=2 and n=3<br>
 
 # Part 3: Automatic image matching and transformations
 
@@ -246,3 +249,11 @@ Again, we think that this could be becasue of the reasons mentioned above mentio
 Alot of problems. <br>
 We did manage to write the RANSAC algorith which takes in the orb descriptors and returns a transformation matrix but tuning the distance(ORB descriptor) and inlier distance(RANSAC) thresholds was a tedious research process. we kept getting wrong transformation matrices so we decoded every step of the RANSAC to refactor in ways that our transform function(from part 2) got the right parameters.<br>
 We went through multiple iterations for the stitching code but nothing was quite fruitful. So we referred a stitching methodology from https://github.com/melanie-t/ransac-panorama-stitch/blob/master/src/PanoramaStitching.py and refactored it according to our needs. This methodology used a function called 'cv2.getRectSubPix' which is used for bilinear interpolation. We weren't sure if we were allowed to use this so really tried hard to write our own homegrown method (which we have included in our code for your reference) but it failed so we had to resort on using 'cv2.getRectSubPix'.
+
+
+## Contribution of Authors:<br>
+Part 1: Atharva Kulkarni and Shardul Dabhane<br>
+Part 2: Sanika Paranjpe<br>
+Part 3:<br>
+   RANSAC : Sanika Paranjpe<br>
+   Image Stitching: Atharva Kulkarni and Shardul Dabhane
