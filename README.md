@@ -239,3 +239,9 @@ We also found some images which did the stitching right but had some duplication
 ![Alt text](https://github.iu.edu/cs-b657-sp2022/sdabhane-sparanjp-athakulk-a2/blob/main/report_images/coffee.png)
 
 Again, we think that this could be becasue of the reasons mentioned above mentioned. 
+
+## Problems Faced
+
+Alot of problems. 
+We did manage to write the RANSAC algorith which takes in the orb descriptors and returns a transformation matrix but tuning the distance(ORB descriptor) and inlier distance(RANSAC) thresholds was a tedious research process. we kept getting wrong transformation matrices so we decoded every step of the RANSAC to refactor in ways that our transform function(from part 2) got the right parameters.
+We went through multiple iterations for the stitching code but nothing was quite fruitful. So we referred a stitching methodology from https://github.com/melanie-t/ransac-panorama-stitch/blob/master/src/PanoramaStitching.py and refactored it according to our needs. This methodology used a function called 'cv2.getRectSubPix' which is used for bilinear interpolation. We weren't sure if we were allowed to use this so really tried hard to write our own homegrown method (which we have included in our code for your reference) but it failed so we had to resort on using 'cv2.getRectSubPix'.
