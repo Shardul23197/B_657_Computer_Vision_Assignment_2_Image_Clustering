@@ -488,6 +488,14 @@ if __name__=="__main__":
         points_image1, points_image2 = orb_descriptor(image1,image2)
         #print("final_points",points_image1,points_image2)
         print("length of final_points",len(points_image2))
+        
+        """
+        RANSAC:
+        Following links were reffered to write the RANSAC for Image homography calculation.
+        https://stackoverflow.com/questions/71282441/im-working-on-image-stitching-i-cant-figure-this-error-out-in-homography-usin
+        https://file.scirp.org/Html/40004.html
+        https://cs.stackexchange.com/questions/70434/how-is-ransac-used-to-estimate-a-homography-given-the-descriptors-of-both-images
+        """
         s = 4 # number of samples or point correspondences for homography.
         max_inliers = 0
         best_points = []
@@ -524,7 +532,7 @@ if __name__=="__main__":
                 print("------here------!!!!!!!!!!!!!!!")
                 best_transformation = deepcopy(matrix)
                 max_inliers = inliers
-        
+        """End of reffered code"""
         print(max_inliers)
         print(best_transformation)
 
